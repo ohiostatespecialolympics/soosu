@@ -6,24 +6,36 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-primary text-primary-foreground py-20 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="font-oswald text-5xl md:text-7xl font-bold mb-6">
-            Empowering Athletes.<br />
-            Building Inclusion.<br />
-            Celebrating Ability.
+      <section className="relative bg-primary text-primary-foreground py-20 md:py-32 px-4 overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-64 h-64 bg-background rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-background rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-background rounded-full blur-2xl animate-pulse" style={{ animationDelay: "2s" }}></div>
+        </div>
+        
+        {/* Geometric pattern overlay */}
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, currentColor 35px, currentColor 36px)`,
+        }}></div>
+
+        <div className="container mx-auto text-center relative z-10">
+          <h1 className="font-oswald text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+            <span className="inline-block hover:scale-105 transition-transform duration-300">Empowering Athletes.</span><br />
+            <span className="inline-block hover:scale-105 transition-transform duration-300" style={{ animationDelay: "0.1s" }}>Building Inclusion.</span><br />
+            <span className="inline-block hover:scale-105 transition-transform duration-300" style={{ animationDelay: "0.2s" }}>Celebrating Ability.</span>
           </h1>
-          <p className="font-montserrat text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+          <p className="font-montserrat text-xl md:text-2xl mb-8 max-w-3xl mx-auto animate-fade-in opacity-90">
             Join us in creating a more inclusive community through the power of sports at The Ohio State University.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
             <Link to="/get-involved">
-              <Button size="lg" variant="secondary" className="font-montserrat font-semibold text-lg">
+              <Button size="lg" variant="secondary" className="font-montserrat font-semibold text-lg hover-scale shadow-lg hover:shadow-xl transition-all">
                 Get Involved
               </Button>
             </Link>
             <Link to="/events">
-              <Button size="lg" variant="outline" className="font-montserrat font-semibold text-lg bg-background/10 hover:bg-background/20 border-background text-primary-foreground">
+              <Button size="lg" variant="outline" className="font-montserrat font-semibold text-lg bg-background/10 hover:bg-background/20 border-2 border-background text-primary-foreground hover-scale shadow-lg hover:shadow-xl transition-all backdrop-blur-sm">
                 See Upcoming Events
               </Button>
             </Link>
