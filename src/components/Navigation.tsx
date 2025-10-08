@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Heart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,9 +8,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import logo from "@/assets/logo.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [donateOpen, setDonateOpen] = useState(false);
   const location = useLocation();
 
   const navigationStructure = [
@@ -48,11 +61,8 @@ const Navigation = () => {
     <nav className="bg-background border-b border-border sticky top-0 z-50" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-oswald text-2xl font-bold text-primary">
-              Special Olympics
-            </span>
-            <span className="font-oswald text-xl hidden sm:inline">at OSU</span>
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="Special Olympics at The Ohio State University" className="h-12 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -101,6 +111,70 @@ const Navigation = () => {
                 </DropdownMenu>
               );
             })}
+            
+            {/* Donate Button */}
+            <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
+              <DialogTrigger asChild>
+                <Button className="ml-2 font-montserrat font-semibold">
+                  <Heart className="mr-2 h-4 w-4" />
+                  Donate
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="font-oswald text-2xl">Support Special Olympics at OSU</DialogTitle>
+                  <DialogDescription className="font-montserrat">
+                    Your donation helps provide year-round sports training and competition for athletes with intellectual disabilities.
+                  </DialogDescription>
+                </DialogHeader>
+                <form className="space-y-4 mt-4" onSubmit={(e) => {
+                  e.preventDefault();
+                  setDonateOpen(false);
+                }}>
+                  <div className="space-y-2">
+                    <Label htmlFor="amount" className="font-montserrat">Donation Amount</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      placeholder="Enter amount"
+                      className="font-montserrat"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="font-montserrat">Full Name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Your name"
+                      className="font-montserrat"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="font-montserrat">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      className="font-montserrat"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="font-montserrat">Message (Optional)</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Any special dedication or message"
+                      className="font-montserrat"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full font-montserrat font-semibold">
+                    Complete Donation
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Mobile Menu Button */}
@@ -159,6 +233,71 @@ const Navigation = () => {
                 </div>
               );
             })}
+            
+            {/* Mobile Donate Button */}
+            <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full font-montserrat font-semibold mt-4">
+                  <Heart className="mr-2 h-4 w-4" />
+                  Donate
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="font-oswald text-2xl">Support Special Olympics at OSU</DialogTitle>
+                  <DialogDescription className="font-montserrat">
+                    Your donation helps provide year-round sports training and competition for athletes with intellectual disabilities.
+                  </DialogDescription>
+                </DialogHeader>
+                <form className="space-y-4 mt-4" onSubmit={(e) => {
+                  e.preventDefault();
+                  setDonateOpen(false);
+                  setIsOpen(false);
+                }}>
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile-amount" className="font-montserrat">Donation Amount</Label>
+                    <Input
+                      id="mobile-amount"
+                      type="number"
+                      placeholder="Enter amount"
+                      className="font-montserrat"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile-name" className="font-montserrat">Full Name</Label>
+                    <Input
+                      id="mobile-name"
+                      type="text"
+                      placeholder="Your name"
+                      className="font-montserrat"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile-email" className="font-montserrat">Email</Label>
+                    <Input
+                      id="mobile-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      className="font-montserrat"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile-message" className="font-montserrat">Message (Optional)</Label>
+                    <Textarea
+                      id="mobile-message"
+                      placeholder="Any special dedication or message"
+                      className="font-montserrat"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full font-montserrat font-semibold">
+                    Complete Donation
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </div>
