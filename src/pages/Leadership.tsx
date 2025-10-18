@@ -48,6 +48,7 @@ const Leadership = () => {
     },
   ];
 
+  const eventChairs = []
 
   return (
     <div className="min-h-screen py-16 px-4">
