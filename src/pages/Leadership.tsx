@@ -5,47 +5,49 @@ import { Button } from "@/components/ui/button";
 const Leadership = () => {
   const executiveBoard = [
     {
-      name: "Sarah Chen",
+      name: "Taylor Doherty",
       position: "President",
-      bio: "Senior majoring in Special Education. Passionate about creating inclusive communities through sports.",
+      bio: "Public Health (Pre-Dental)",
       quote: "Every athlete deserves the chance to shine. That's why I volunteer with Special Olympics.",
     },
     {
-      name: "Marcus Williams",
+      name: "Jacob Tartabini",
       position: "Vice President",
-      bio: "Junior studying Sport Industry. Former high school basketball coach with a heart for adaptive sports.",
+      bio: "Accounting/Finance.",
       quote: "The determination and joy I see in our athletes inspires me every single day.",
     },
     {
-      name: "Emily Rodriguez",
+      name: "Xavier White",
+      position: "Treasurer",
+      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
+      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+    },
+    {
+      name: "Anokhi Kulkarni",
+      position: "Treasurer",
+      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
+      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+    },
+    {
+      name: "Kavya Kudalkar",
+      position: "Treasurer",
+      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
+      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+    },
+    {
+      name: "David Rossman",
+      position: "Treasurer",
+      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
+      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+    },
+    {
+      name: "Jessie Tagg",
       position: "Treasurer",
       bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
       quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
     },
   ];
 
-  const eventChairs = [
-    {
-      name: "Jake Morrison",
-      position: "Polar Plunge Chair",
-      bio: "Sophomore in Marketing. Coordinates our largest annual fundraising event.",
-    },
-    {
-      name: "Aisha Patel",
-      position: "Volunteer Coordinator",
-      bio: "Junior in Social Work. Manages volunteer recruitment, training, and scheduling.",
-    },
-    {
-      name: "David Kim",
-      position: "Athletics Coordinator",
-      bio: "Senior in Kinesiology. Organizes sports practices and competition logistics.",
-    },
-    {
-      name: "Maya Thompson",
-      position: "Communications Director",
-      bio: "Junior in Strategic Communication. Handles social media and campus outreach.",
-    },
-  ];
 
   return (
     <div className="min-h-screen py-16 px-4">
