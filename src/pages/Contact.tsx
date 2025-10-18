@@ -5,11 +5,38 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, MapPin, Instagram, Linkedin } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const Contact = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success("Message sent! We'll get back to you soon.");
+    setIsSubmitting(true);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("https://formspree.io/f/mwprzken", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (response.ok) {
+        toast.success("Message sent! We'll get back to you soon.");
+        form.reset();
+      } else {
+        toast.error("Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,7 +63,8 @@ const Contact = () => {
                 <div>
                   <Label htmlFor="name" className="font-montserrat">Name *</Label>
                   <Input 
-                    id="name" 
+                    id="name"
+                    name="name"
                     required 
                     className="font-montserrat"
                     placeholder="Your full name"
@@ -45,7 +73,8 @@ const Contact = () => {
                 <div>
                   <Label htmlFor="email" className="font-montserrat">Email *</Label>
                   <Input 
-                    id="email" 
+                    id="email"
+                    name="email"
                     type="email" 
                     required 
                     className="font-montserrat"
@@ -55,7 +84,8 @@ const Contact = () => {
                 <div>
                   <Label htmlFor="subject" className="font-montserrat">Subject</Label>
                   <Input 
-                    id="subject" 
+                    id="subject"
+                    name="subject"
                     className="font-montserrat"
                     placeholder="What is this regarding?"
                   />
@@ -63,14 +93,15 @@ const Contact = () => {
                 <div>
                   <Label htmlFor="message" className="font-montserrat">Message *</Label>
                   <Textarea 
-                    id="message" 
+                    id="message"
+                    name="message"
                     required 
                     className="font-montserrat min-h-[150px]"
                     placeholder="Tell us how we can help..."
                   />
                 </div>
-                <Button type="submit" className="w-full font-montserrat font-semibold">
-                  Send Message
+                <Button type="submit" disabled={isSubmitting} className="w-full font-montserrat font-semibold">
+                  {isSubmitting ? "Sending..." : "Send Message"}
                 </Button>
               </form>
             </CardContent>
