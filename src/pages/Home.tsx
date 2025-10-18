@@ -26,16 +26,12 @@ const Home = () => {
           <div className="max-w-6xl mx-auto">
             {/* Main Content */}
             <div className="text-center space-y-12">
-              {/* Logo */}
-              <div className="inline-flex items-center justify-center">
-                <div className="relative group">
-                  <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-xl group-hover:bg-primary/20 transition-all duration-500"></div>
-                  <img 
-                    src={logo} 
-                    alt="Special Olympics at OSU" 
-                    className="relative h-32 w-auto object-contain drop-shadow-lg"
-                  />
-                </div>
+              {/* OSU Badge */}
+              <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-muted border border-border">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="font-montserrat text-sm font-medium text-foreground">
+                  The Ohio State University Chapter
+                </span>
               </div>
 
               {/* Main Heading */}
@@ -50,8 +46,7 @@ const Home = () => {
                 </h1>
                 
                 <p className="font-montserrat text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                  Join Ohio State's chapter of Special Olympics in building an inclusive community 
-                  through the transformative power of sports and athletics.
+                  Building an inclusive community through sports.
                 </p>
               </div>
 
@@ -105,24 +100,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Additional Info */}
-              <div className="pt-12">
-                <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-muted border border-border">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="font-montserrat text-sm font-medium text-foreground">
-                    The Ohio State University Chapter
-                  </span>
-                </div>
-              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex items-start justify-center p-2">
-            <div className="w-1.5 h-2 bg-muted-foreground/30 rounded-full"></div>
           </div>
         </div>
       </section>
