@@ -99,7 +99,7 @@ const Contact = () => {
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="font-montserrat font-semibold">Mailing Address</p>
+                    <p className="font-montserrat font-semibold">Address</p>
                     <p className="font-montserrat text-muted-foreground">
                       Ohio Union<br />
                       1739 N High St<br />
@@ -112,7 +112,7 @@ const Contact = () => {
                   <p className="font-montserrat font-semibold mb-3">Follow Us</p>
                   <div className="flex gap-4">
                     <a
-                      href="https://instagram.com"
+                      href="https://www.instagram.com/osuspecialolympics/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 font-montserrat text-muted-foreground hover:text-primary transition-colors"
@@ -122,7 +122,7 @@ const Contact = () => {
                       <span>Instagram</span>
                     </a>
                     <a
-                      href="https://linkedin.com"
+                      href="https://linkedin.com/company/soosu"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 font-montserrat text-muted-foreground hover:text-primary transition-colors"
