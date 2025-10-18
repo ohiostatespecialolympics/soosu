@@ -91,7 +91,7 @@ const Contact = () => {
                       href="mailto:specialolympics@osu.edu" 
                       className="font-montserrat text-muted-foreground hover:text-primary transition-colors"
                     >
-                      specialolympics@osu.edu
+                      contact@soosu.org
                     </a>
                   </div>
                 </div>
