@@ -88,7 +88,7 @@ const Contact = () => {
                   <div>
                     <p className="font-montserrat font-semibold">Email</p>
                     <a 
-                      href="mailto:specialolympics@osu.edu" 
+                      href="mailto:contact@soosu.org" 
                       className="font-montserrat text-muted-foreground hover:text-primary transition-colors"
                     >
                       contact@soosu.org
