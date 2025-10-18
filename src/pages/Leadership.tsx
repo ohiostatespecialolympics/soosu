@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Leadership = () => {
   const executiveBoard = [
@@ -9,42 +10,49 @@ const Leadership = () => {
       position: "President",
       bio: "Public Health (Pre-Dental)",
       quote: "Every athlete deserves the chance to shine. That's why I volunteer with Special Olympics.",
+      image: "", // Add image URL here
     },
     {
       name: "Jacob Tartabini",
       position: "Vice President",
       bio: "Accounting/Finance.",
       quote: "The determination and joy I see in our athletes inspires me every single day.",
+      image: "", // Add image URL here
     },
     {
       name: "Xavier White",
       position: "Treasurer",
       bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
       quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      image: "", // Add image URL here
     },
     {
       name: "Anokhi Kulkarni",
       position: "Treasurer",
       bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
       quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      image: "", // Add image URL here
     },
     {
       name: "Kavya Kudalkar",
       position: "Treasurer",
       bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
       quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      image: "", // Add image URL here
     },
     {
       name: "David Rossman",
       position: "Treasurer",
       bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
       quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      image: "", // Add image URL here
     },
     {
       name: "Jessie Tagg",
       position: "Treasurer",
       bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
       quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      image: "", // Add image URL here
     },
   ];
 
@@ -70,10 +78,13 @@ const Leadership = () => {
             {executiveBoard.map((member, index) => (
               <Card key={index} className="flex flex-col">
                 <CardHeader>
-                  <div className="aspect-square bg-muted flex items-center justify-center rounded-lg mb-4">
-                    <p className="font-oswald text-4xl text-muted-foreground">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </p>
+                  <div className="flex justify-center mb-4">
+                    <Avatar className="h-32 w-32">
+                      <AvatarImage src={member.image} alt={member.name} />
+                      <AvatarFallback className="text-3xl font-oswald">
+                        {member.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                   <CardTitle className="font-oswald text-xl">{member.name}</CardTitle>
                   <CardDescription className="font-montserrat font-semibold text-primary">
