@@ -9,49 +9,49 @@ const Leadership = () => {
       name: "Taylor Doherty",
       position: "President",
       bio: "Public Health (Pre-Dental)",
-      quote: "Every athlete deserves the chance to shine. That's why I volunteer with Special Olympics.",
+      quote: "Special Olympics has shown me that you can make an impact in every way, whether it’s cheering, coaching, or just showing up, every moment matters.",
       image: "", // Add image URL here
     },
     {
       name: "Jacob Tartabini",
       position: "Vice President",
-      bio: "Accounting/Finance.",
-      quote: "The determination and joy I see in our athletes inspires me every single day.",
+      bio: "Accounting & Finance",
+      quote: "I love working with Special Olympics athletes because their joy, determination, and spirit inspire me to see the best in people and the power of community.",
       image: "", // Add image URL here
     },
     {
       name: "Xavier White",
       position: "Treasurer",
-      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
-      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      bio: "Public Policy (Pre-Law)",
+      quote: "Everyone deserves to play",
       image: "", // Add image URL here
     },
     {
       name: "Anokhi Kulkarni",
-      position: "Treasurer",
-      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
-      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      position: "Secretary",
+      bio: "Neuroscience",
+      quote: "I love Special Olympics because it keeps me connected to the sports I love and it’s always a blast to coach and spend time with the athletes.",
       image: "", // Add image URL here
     },
     {
       name: "Kavya Kudalkar",
-      position: "Treasurer",
-      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
-      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      position: "Secretary",
+      bio: "Molecular Genetics",
+      quote: "Special Olympics has given me the opportunity to meet and work with so many new athletes in sports that I love!",
       image: "", // Add image URL here
     },
     {
       name: "David Rossman",
-      position: "Treasurer",
-      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
-      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      position: "Social Media",
+      bio: "Health Services (Pre-Dental)",
+      quote: "INSERT HERE",
       image: "", // Add image URL here
     },
     {
       name: "Jessie Tagg",
-      position: "Treasurer",
-      bio: "Junior in Finance. Ensures our fundraising efforts maximize impact for our athletes.",
-      quote: "Managing our finances means I get to help turn donations into real opportunities for athletes.",
+      position: "Events & Logistics",
+      bio: "Animal Sciences",
+      quote: "I love Special Olympics because I get to see the pure enthusiasm and smiles on everyone’s face every week!.",
       image: "", // Add image URL here
     },
   ];
