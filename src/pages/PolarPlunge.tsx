@@ -119,8 +119,8 @@ const PolarPlunge = () => {
                 <CardTitle className="font-oswald">When</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-montserrat">March 22, 2025</p>
-                <p className="font-montserrat">10:00 AM - 2:00 PM</p>
+                <p className="font-montserrat">October 28, 2025</p>
+                <p className="font-montserrat">8:00 AM - 12:00 PM</p>
               </CardContent>
             </Card>
 
@@ -130,8 +130,8 @@ const PolarPlunge = () => {
                 <CardTitle className="font-oswald">Where</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-montserrat">Mirror Lake</p>
-                <p className="font-montserrat">OSU Campus</p>
+                <p className="font-montserrat">Basketball Courts</p>
+                <p className="font-montserrat">Lincoln Tower</p>
               </CardContent>
             </Card>
 
@@ -141,8 +141,8 @@ const PolarPlunge = () => {
                 <CardTitle className="font-oswald">Goal</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-montserrat text-2xl font-bold text-primary">$75,000</p>
-                <p className="font-montserrat text-sm text-muted-foreground">100% supports athletes</p>
+                <p className="font-montserrat text-2xl font-bold text-primary">$10,000</p>
+                <p className="font-montserrat text-sm text-muted-foreground">100% supports atheletes</p>
               </CardContent>
             </Card>
           </div>
@@ -150,12 +150,12 @@ const PolarPlunge = () => {
           <div className="bg-accent p-6 rounded-lg">
             <h3 className="font-oswald text-2xl font-bold mb-4">What to Expect</h3>
             <ul className="space-y-2 font-montserrat">
-              <li>✓ Check-in and costume contest (9:30 AM)</li>
+              <li>✓ Check-in and costume contest (7:45 AM)</li>
               <li>✓ Warm-up activities and music</li>
-              <li>✓ Group plunge into Mirror Lake</li>
-              <li>✓ Hot chocolate and snacks</li>
-              <li>✓ Team awards and recognition</li>
-              <li>✓ Commemorative t-shirt for all participants</li>
+              <li>✓ OSU Atheletes and Brutus</li>
+              <li>✓ Drinks and snacks</li>
+              <li>✓ Awards and recognition</li>
+              <li>✓ Long sleve shirt distribution</li>
             </ul>
           </div>
         </div>
