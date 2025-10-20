@@ -10,35 +10,35 @@ const Leadership = () => {
       position: "President",
       bio: "Public Health (Pre-Dental)",
       quote: "Special Olympics has shown me that you can make an impact in every way, whether it’s cheering, coaching, or just showing up, every moment matters.",
-      image: "", // Add image URL here
+      image: "/taylor.jpeg", // Add image URL here
     },
     {
       name: "Jacob Tartabini",
       position: "Vice President",
       bio: "Accounting & Finance",
       quote: "I love working with Special Olympics athletes because their joy, determination, and spirit inspire me to see the best in people and the power of community.",
-      image: "", // Add image URL here
+      image: "/jacob.png", // Add image URL here
     },
     {
       name: "Xavier White",
       position: "Treasurer",
       bio: "Public Policy (Pre-Law)",
       quote: "Everyone deserves to play",
-      image: "", // Add image URL here
+      image: "/xavier.jpeg", // Add image URL here
     },
     {
       name: "Anokhi Kulkarni",
       position: "Secretary",
       bio: "Neuroscience",
       quote: "I love Special Olympics because it keeps me connected to the sports I love and it’s always a blast to coach and spend time with the athletes.",
-      image: "", // Add image URL here
+      image: "/anokhi.jpeg", // Add image URL here
     },
     {
       name: "Kavya Kudalkar",
       position: "Secretary",
       bio: "Molecular Genetics",
       quote: "Special Olympics has given me the opportunity to meet and work with so many new athletes in sports that I love!",
-      image: "", // Add image URL here
+      image: "/kavya.png", // Add image URL here
     },
     {
       name: "David Rossman",
@@ -52,7 +52,7 @@ const Leadership = () => {
       position: "Events & Logistics",
       bio: "Animal Sciences",
       quote: "I love Special Olympics because I get to see the pure enthusiasm and smiles on everyone’s face every week!.",
-      image: "", // Add image URL here
+      image: "/jessie.JPG", // Add image URL here
     },
   ];
 
