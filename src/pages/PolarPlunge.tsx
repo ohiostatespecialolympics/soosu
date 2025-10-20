@@ -37,26 +37,24 @@ const PolarPlunge = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="bg-primary text-primary-foreground py-20 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="font-oswald text-5xl md:text-7xl font-bold mb-6">
-            Polar Plunge 2025
-          </h1>
-          <p className="font-montserrat text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-            Take the plunge for a great cause! Join us at Mirror Lake for our biggest fundraising event of the year.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary" className="font-montserrat font-semibold text-lg">
-              Register to Plunge
-            </Button>
-            <Button size="lg" variant="outline" className="font-montserrat font-semibold text-lg bg-background/10 hover:bg-background/20 border-background text-primary-foreground">
-              Donate
-            </Button>
-            <Button size="lg" variant="outline" className="font-montserrat font-semibold text-lg bg-background/10 hover:bg-background/20 border-background text-primary-foreground">
-              Form a Team
-            </Button>
-          </div>
-        </div>
-      </section>
+  <div className="container mx-auto text-center">
+    <h1 className="font-oswald text-5xl md:text-7xl font-bold mb-6">
+      Polar Plunge 2025
+    </h1>
+    <p className="font-montserrat text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+      Take the plunge for a great cause! Join us at Mirror Lake for our biggest fundraising event of the year.
+    </p>
+
+    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="https://go.osu.edu/polarplunge25" target="_blank" rel="noopener noreferrer">
+        <Button size="lg" variant="secondary" className="font-montserrat font-semibold text-lg">
+          Donate Now
+        </Button>
+      </a>
+    </div>
+  </div>
+</section>
+
 
       {/* Countdown Timer */}
       <section className="py-12 px-4 bg-accent">
