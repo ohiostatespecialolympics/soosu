@@ -4,7 +4,7 @@ import { Trophy, Heart, Users, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const PolarPlunge = () => {
-  const targetDate = new Date("2025-03-22T10:00:00");
+  const targetDate = new Date("2025-10-28T08:00:00");
   const [timeRemaining, setTimeRemaining] = useState({
     days: 0,
     hours: 0,
