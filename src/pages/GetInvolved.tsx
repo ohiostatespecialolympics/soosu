@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +8,34 @@ import { UserCheck, Users, Building2 } from "lucide-react";
 import { toast } from "sonner";
 
 const GetInvolved = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success("Thank you! We'll be in touch soon.");
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const response = await fetch("https://formspree.io/f/mwprzken", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (response.ok) {
+        toast.success("Thank you! We'll be in touch soon.");
+        e.currentTarget.reset();
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -164,18 +190,18 @@ const GetInvolved = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="name" className="font-montserrat">Name</Label>
-                  <Input id="name" required className="font-montserrat" />
+                  <Input id="name" name="name" required className="font-montserrat" />
                 </div>
                 <div>
                   <Label htmlFor="email" className="font-montserrat">Email</Label>
-                  <Input id="email" type="email" required className="font-montserrat" />
+                  <Input id="email" name="email" type="email" required className="font-montserrat" />
                 </div>
                 <div>
                   <Label htmlFor="message" className="font-montserrat">Message</Label>
-                  <Textarea id="message" required className="font-montserrat min-h-[120px]" />
+                  <Textarea id="message" name="message" required className="font-montserrat min-h-[120px]" />
                 </div>
-                <Button type="submit" className="w-full font-montserrat font-semibold">
-                  Send Message
+                <Button type="submit" disabled={isSubmitting} className="w-full font-montserrat font-semibold">
+                  {isSubmitting ? "Sending..." : "Send Message"}
                 </Button>
               </form>
             </CardContent>
