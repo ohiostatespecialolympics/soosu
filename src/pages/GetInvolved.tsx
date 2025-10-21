@@ -122,7 +122,7 @@ const GetInvolved = () => {
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Building2 className="h-6 w-6" />
               </div>
-              <CardTitle className="font-oswald text-2xl">Students & Organizations</CardTitle>
+              <CardTitle className="font-oswald text-2xl">Companies & Clubs</CardTitle>
               <CardDescription className="font-montserrat">
                 Partner with us to bring inclusion initiatives to your group or organization.
               </CardDescription>
