@@ -44,7 +44,7 @@ const Footer = () => {
             <h4 className="font-oswald text-lg font-semibold mb-4">Connect With Us</h4>
             <div className="flex space-x-4 mb-4">
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/osuspecialolympics"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -53,7 +53,7 @@ const Footer = () => {
                 <Instagram className="h-6 w-6" />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://linkedin.com/company/soosu"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors"
@@ -62,7 +62,7 @@ const Footer = () => {
                 <Linkedin className="h-6 w-6" />
               </a>
               <a
-                href="mailto:specialolympics@osu.edu"
+                href="mailto:contact@soosu.org"
                 className="hover:text-primary transition-colors"
                 aria-label="Email us"
               >
@@ -70,7 +70,7 @@ const Footer = () => {
               </a>
             </div>
             <p className="font-montserrat text-sm text-background/80">
-              specialolympics@osu.edu
+              contact@soosu.org
             </p>
           </div>
         </div>
