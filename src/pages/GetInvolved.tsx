@@ -159,10 +159,9 @@ const GetInvolved = () => {
             <Card className="bg-accent">
               <CardContent className="pt-6">
                 <p className="font-montserrat italic text-muted-foreground mb-4">
-                  "Volunteering with Special Olympics has been the most rewarding experience of my college 
-                  years. The athletes inspire me every day with their determination and positive attitudes."
+                  "Special Olympics is such an incredible organization because it allows Ohio State students to connect with the Columbus community around us. Working with the athletes is an inspiring and heart-warming experience.."
                 </p>
-                <p className="font-montserrat font-semibold">— Sarah M., Junior Volunteer</p>
+                <p className="font-montserrat font-semibold">— Alex S., Sophomore Volunteer</p>
               </CardContent>
             </Card>
             <Card className="bg-accent">
