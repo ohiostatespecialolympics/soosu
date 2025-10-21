@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, Users, Building2 } from "lucide-react";
@@ -43,7 +43,7 @@ const GetInvolved = () => {
                   <li>Commitment to 2-3 events per semester</li>
                 </ul>
               </div>
-              <Link href="/join" passHref>
+              <Link to="/join">
                 <Button className="w-full font-montserrat font-semibold">
                   Sign Up to Volunteer
                 </Button>
@@ -117,7 +117,7 @@ const GetInvolved = () => {
                   <li>Build lasting partnerships</li>
                 </ul>
               </div>
-              <Link href="/become-a-sponsor" passHref>
+              <Link to="/become-a-sponsor">
                 <Button className="w-full font-montserrat font-semibold">
                   Partner with Us
                 </Button>
