@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link"; // ✅ Add this for internal routing
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -77,9 +78,12 @@ const GetInvolved = () => {
                   <li>Commitment to 2-3 events per semester</li>
                 </ul>
               </div>
-              <Button className="w-full font-montserrat font-semibold">
-                Sign Up to Volunteer
-              </Button>
+              {/* Internal page example */}
+              <Link href="/join" passHref>
+                <Button className="w-full font-montserrat font-semibold">
+                  Sign Up to Volunteer
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -110,9 +114,16 @@ const GetInvolved = () => {
                   <li>Free to participate</li>
                 </ul>
               </div>
-              <Button className="w-full font-montserrat font-semibold">
-                Join as an Athlete
-              </Button>
+              {/* External link example */}
+              <a
+                href="https://www.ccsoh.us/Page/1229"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="w-full font-montserrat font-semibold">
+                  Join as an Athlete
+                </Button>
+              </a>
             </CardContent>
           </Card>
 
@@ -143,9 +154,12 @@ const GetInvolved = () => {
                   <li>Build lasting partnerships</li>
                 </ul>
               </div>
-              <Button className="w-full font-montserrat font-semibold">
-                Partner with Us
-              </Button>
+              {/* Another internal page example */}
+              <Link href="/become-a-sponsor" passHref>
+                <Button className="w-full font-montserrat font-semibold">
+                  Partner with Us
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
