@@ -77,7 +77,7 @@ const Home = () => {
               <div className="grid grid-cols-3 gap-8 pt-16 max-w-4xl mx-auto">
                 <div className="space-y-2 group">
                   <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">
-                    60+
+                    200+
                   </div>
                   <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
                     Volunteers
@@ -85,7 +85,7 @@ const Home = () => {
                 </div>
                 <div className="space-y-2 group">
                   <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">
-                    50+
+                    500+
                   </div>
                   <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
                     Athletes
@@ -93,7 +93,7 @@ const Home = () => {
                 </div>
                 <div className="space-y-2 group">
                   <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">
-                    12+
+                    100+
                   </div>
                   <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
                     Events/Year
