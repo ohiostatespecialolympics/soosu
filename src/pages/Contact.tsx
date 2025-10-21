@@ -167,18 +167,6 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-oswald text-xl">Office Hours</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-montserrat text-muted-foreground">
-                  We hold weekly meetings during the academic year. Check our social media 
-                  for the latest meeting times and locations, or email us to learn more.
-                </p>
-              </CardContent>
-            </Card>
-
             <Card className="bg-accent">
               <CardContent className="pt-6">
                 <p className="font-montserrat text-sm text-muted-foreground">
