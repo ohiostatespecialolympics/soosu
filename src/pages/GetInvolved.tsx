@@ -1,44 +1,9 @@
-import { useState } from "react";
-import Link from "next/link"; // ✅ Add this for internal routing
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { UserCheck, Users, Building2 } from "lucide-react";
-import { toast } from "sonner";
 
 const GetInvolved = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const formData = new FormData(e.currentTarget);
-
-    try {
-      const response = await fetch("https://formspree.io/f/mwprzken", {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      if (response.ok) {
-        toast.success("Thank you! We'll be in touch soon.");
-        e.currentTarget.reset();
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
-    } catch (error) {
-      toast.error("Failed to send message. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="min-h-screen py-16 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -51,7 +16,7 @@ const GetInvolved = () => {
         </p>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {/* Volunteers */}
+          {/* Students */}
           <Card>
             <CardHeader>
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mb-4">
@@ -78,7 +43,6 @@ const GetInvolved = () => {
                   <li>Commitment to 2-3 events per semester</li>
                 </ul>
               </div>
-              {/* Internal page example */}
               <Link href="/join" passHref>
                 <Button className="w-full font-montserrat font-semibold">
                   Sign Up to Volunteer
@@ -114,7 +78,6 @@ const GetInvolved = () => {
                   <li>Free to participate</li>
                 </ul>
               </div>
-              {/* External link example */}
               <a
                 href="https://www.ccsoh.us/Page/1229"
                 target="_blank"
@@ -127,7 +90,7 @@ const GetInvolved = () => {
             </CardContent>
           </Card>
 
-          {/* Organizations */}
+          {/* Companies & Clubs */}
           <Card>
             <CardHeader>
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mb-4">
@@ -154,7 +117,6 @@ const GetInvolved = () => {
                   <li>Build lasting partnerships</li>
                 </ul>
               </div>
-              {/* Another internal page example */}
               <Link href="/become-a-sponsor" passHref>
                 <Button className="w-full font-montserrat font-semibold">
                   Partner with Us
@@ -173,7 +135,7 @@ const GetInvolved = () => {
             <Card className="bg-accent">
               <CardContent className="pt-6">
                 <p className="font-montserrat italic text-muted-foreground mb-4">
-                  "Special Olympics is such an incredible organization because it allows Ohio State students to connect with the Columbus community around us. Working with the athletes is an inspiring and heart-warming experience.."
+                  "Special Olympics is such an incredible organization because it allows Ohio State students to connect with the Columbus community around us. Working with the athletes is an inspiring and heart-warming experience."
                 </p>
                 <p className="font-montserrat font-semibold">— Alex S., Sophomore Volunteer</p>
               </CardContent>
@@ -190,35 +152,17 @@ const GetInvolved = () => {
           </div>
         </section>
 
-        {/* Contact Form */}
-        <section>
-          <h2 className="font-oswald text-3xl font-bold text-center mb-4">
-            Have Questions?
-          </h2>
-          <p className="font-montserrat text-center text-muted-foreground mb-8">
-            Send us a message and we'll get back to you as soon as possible.
+        {/* Contact Redirect Message */}
+        <section className="text-center py-12 bg-muted rounded-lg">
+          <h2 className="font-oswald text-3xl font-bold mb-4">Have Questions?</h2>
+          <p className="font-montserrat text-muted-foreground mb-6">
+            We'd love to hear from you. Visit our contact page to reach out directly.
           </p>
-          <Card className="max-w-2xl mx-auto">
-            <CardContent className="pt-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="font-montserrat">Name</Label>
-                  <Input id="name" name="name" required className="font-montserrat" />
-                </div>
-                <div>
-                  <Label htmlFor="email" className="font-montserrat">Email</Label>
-                  <Input id="email" name="email" type="email" required className="font-montserrat" />
-                </div>
-                <div>
-                  <Label htmlFor="message" className="font-montserrat">Message</Label>
-                  <Textarea id="message" name="message" required className="font-montserrat min-h-[120px]" />
-                </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full font-montserrat font-semibold">
-                  {isSubmitting ? "Sending..." : "Send Message"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+          <Link href="/contact">
+            <Button className="font-montserrat font-semibold px-8 py-3">
+              Go to Contact Page
+            </Button>
+          </Link>
         </section>
       </div>
     </div>
