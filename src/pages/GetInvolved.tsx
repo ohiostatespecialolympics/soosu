@@ -96,7 +96,7 @@ const GetInvolved = () => {
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Building2 className="h-6 w-6" />
               </div>
-              <CardTitle className="font-oswald text-2xl">Students & Organizations</CardTitle>
+              <CardTitle className="font-oswald text-2xl">Companies & Clubs</CardTitle>
               <CardDescription className="font-montserrat">
                 Partner with us to bring inclusion initiatives to your group or organization.
               </CardDescription>
@@ -151,36 +151,41 @@ const GetInvolved = () => {
           </div>
         </section>
 
-        {/* Contact Form */}
-        <section>
-          <h2 className="font-oswald text-3xl font-bold text-center mb-4">
-            Have Questions?
-          </h2>
-          <p className="font-montserrat text-center text-muted-foreground mb-8">
-            Send us a message and we'll get back to you as soon as possible.
-          </p>
-          <Card className="max-w-2xl mx-auto">
-            <CardContent className="pt-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="font-montserrat">Name</Label>
-                  <Input id="name" required className="font-montserrat" />
-                </div>
-                <div>
-                  <Label htmlFor="email" className="font-montserrat">Email</Label>
-                  <Input id="email" type="email" required className="font-montserrat" />
-                </div>
-                <div>
-                  <Label htmlFor="message" className="font-montserrat">Message</Label>
-                  <Textarea id="message" required className="font-montserrat min-h-[120px]" />
-                </div>
-                <Button type="submit" className="w-full font-montserrat font-semibold">
-                  Send Message
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </section>
+{/* Contact Form */}
+<section>
+  <h2 className="font-oswald text-3xl font-bold text-center mb-4">
+    Have Questions?
+  </h2>
+  <p className="font-montserrat text-center text-muted-foreground mb-8">
+    Send us a message and we'll get back to you as soon as possible.
+  </p>
+  <Card className="max-w-2xl mx-auto">
+    <CardContent className="pt-6">
+      <form
+        action="https://formspree.io/f/mwprzken"
+        method="POST"
+        className="space-y-4"
+        onSubmit={() => toast.success("Thank you! We'll be in touch soon.")}
+      >
+        <div>
+          <Label htmlFor="name" className="font-montserrat">Name</Label>
+          <Input id="name" name="name" required className="font-montserrat" />
+        </div>
+        <div>
+          <Label htmlFor="email" className="font-montserrat">Email</Label>
+          <Input id="email" name="email" type="email" required className="font-montserrat" />
+        </div>
+        <div>
+          <Label htmlFor="message" className="font-montserrat">Message</Label>
+          <Textarea id="message" name="message" required className="font-montserrat min-h-[120px]" />
+        </div>
+        <Button type="submit" className="w-full font-montserrat font-semibold">
+          Send Message
+        </Button>
+      </form>
+    </CardContent>
+  </Card>
+</section>
       </div>
     </div>
   );
