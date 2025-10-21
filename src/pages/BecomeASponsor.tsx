@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Award, Star, Medal, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const Sponsors = () => {
+const BecomeASponsor = () => {
   return (
     <div className="min-h-screen py-16 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -206,4 +206,4 @@ const Sponsors = () => {
   );
 };
 
-export default Sponsors;
+export default BecomeASponsor;

@@ -11,7 +11,8 @@ import GetInvolved from "./pages/GetInvolved";
 import Events from "./pages/Events";
 import EventsCalendar from "./pages/EventsCalendar";
 import PolarPlunge from "./pages/PolarPlunge";
-import Sponsors from "./pages/Sponsors";
+import CurrentSponsors from "./pages/CurrentSponsors";
+import BecomeASponsor from "./pages/BecomeASponsor";
 import Leadership from "./pages/Leadership";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -34,7 +35,8 @@ const App = () => (
               <Route path="/events" element={<EventsCalendar />} />
               <Route path="/events/list" element={<Events />} />
               <Route path="/polar-plunge" element={<PolarPlunge />} />
-              <Route path="/sponsors" element={<Sponsors />} />
+              <Route path="/sponsors" element={<CurrentSponsors />} />
+              <Route path="/become-a-sponsor" element={<BecomeASponsor />} />
               <Route path="/leadership" element={<Leadership />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} />
