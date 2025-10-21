@@ -45,7 +45,7 @@ const Leadership = () => {
       position: "Social Media",
       bio: "Health Services (Pre-Dental)",
       quote: "INSERT HERE",
-      image: "", // Add image URL here
+      image: "/david.jpeg", // Add image URL here
     },
     {
       name: "Jessie Tagg",
