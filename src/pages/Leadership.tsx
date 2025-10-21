@@ -38,7 +38,7 @@ const Leadership = () => {
       position: "Secretary",
       bio: "Molecular Genetics",
       quote: "Special Olympics has given me the opportunity to meet and work with so many new athletes in sports that I love!",
-      image: "/kavya.png", // Add image URL here
+      image: "/kavya1.png", // Add image URL here
     },
     {
       name: "David Rossman",
