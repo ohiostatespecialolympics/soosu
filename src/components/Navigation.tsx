@@ -26,31 +26,27 @@ const Navigation = () => {
   const [donateOpen, setDonateOpen] = useState(false);
   const location = useLocation();
 
-  type NavItem = 
-    | { to: string; label: string }
-    | { to: string; label: string; items: { to: string; label: string }[] };
-
-  const navigationStructure: NavItem[] = [
+  const navigationStructure = [
     { to: "/", label: "Home" },
     {
-      to: "/about",
       label: "About",
       items: [
+        { to: "/about", label: "Mission & History" },
         { to: "/leadership", label: "Leadership" },
       ],
     },
     {
-      to: "/get-involved",
       label: "Get Involved",
       items: [
+        { to: "/get-involved", label: "Join Us / Volunteer" },
         { to: "/events", label: "Event Calendar" },
         { to: "/polar-plunge", label: "Polar Plunge" },
       ],
     },
     {
-      to: "/sponsors",
       label: "Sponsors",
       items: [
+        { to: "/sponsors", label: "Current Sponsors" },
         { to: "/become-a-sponsor", label: "Become a Sponsor" },
       ],
     },
@@ -72,7 +68,7 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
             {navigationStructure.map((item, index) => {
-              if (!("items" in item)) {
+              if ("to" in item) {
                 return (
                   <Link
                     key={item.to}
@@ -90,27 +86,16 @@ const Navigation = () => {
 
               return (
                 <DropdownMenu key={index}>
-                  <div className="flex items-center gap-1">
-                    <Link
-                      to={item.to}
-                      className={`px-3 py-2 rounded-md text-sm font-montserrat font-medium transition-colors ${
-                        isActive(item.to) || isGroupActive(item.items)
-                          ? "text-primary bg-accent"
-                          : "text-foreground hover:text-primary hover:bg-accent"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                    <DropdownMenuTrigger className={`px-2 py-2 rounded-md text-sm font-montserrat font-medium transition-colors inline-flex items-center ${
-                      isActive(item.to) || isGroupActive(item.items)
-                        ? "text-primary bg-accent"
-                        : "text-foreground hover:text-primary hover:bg-accent"
-                    }`}>
-                      <ChevronDown className="h-4 w-4" />
-                    </DropdownMenuTrigger>
-                  </div>
+                  <DropdownMenuTrigger className={`px-3 py-2 rounded-md text-sm font-montserrat font-medium transition-colors inline-flex items-center gap-1 ${
+                    isGroupActive(item.items)
+                      ? "text-primary bg-accent"
+                      : "text-foreground hover:text-primary hover:bg-accent"
+                  }`}>
+                    {item.label}
+                    <ChevronDown className="h-3 w-3" />
+                  </DropdownMenuTrigger>
                   <DropdownMenuContent className="bg-background border-border z-50">
-                    {item.items.map((subItem) => (
+                    {item.items?.map((subItem) => (
                       <DropdownMenuItem key={subItem.to} asChild>
                         <Link
                           to={subItem.to}
@@ -209,7 +194,7 @@ const Navigation = () => {
         {isOpen && (
           <div className="lg:hidden pb-4 space-y-1">
             {navigationStructure.map((item, index) => {
-              if (!("items" in item)) {
+              if ("to" in item) {
                 return (
                   <Link
                     key={item.to}
@@ -228,33 +213,23 @@ const Navigation = () => {
 
               return (
                 <div key={index} className="space-y-1">
-                  <Link
-                    to={item.to}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-3 py-2 rounded-md text-base font-montserrat font-semibold ${
-                      isActive(item.to) || isGroupActive(item.items)
-                        ? "text-primary bg-accent"
-                        : "text-foreground hover:text-primary hover:bg-accent"
-                    }`}
-                  >
+                  <div className="px-3 py-2 text-base font-montserrat font-semibold text-foreground">
                     {item.label}
-                  </Link>
-                  <div className="space-y-1">
-                    {item.items.map((subItem) => (
-                      <Link
-                        key={subItem.to}
-                        to={subItem.to}
-                        onClick={() => setIsOpen(false)}
-                        className={`block pl-6 pr-3 py-2 rounded-md text-base font-montserrat font-medium ${
-                          isActive(subItem.to)
-                            ? "text-primary bg-accent"
-                            : "text-foreground hover:text-primary hover:bg-accent"
-                        }`}
-                      >
-                        {subItem.label}
-                      </Link>
-                    ))}
                   </div>
+                  {item.items?.map((subItem) => (
+                    <Link
+                      key={subItem.to}
+                      to={subItem.to}
+                      onClick={() => setIsOpen(false)}
+                      className={`block pl-6 pr-3 py-2 rounded-md text-base font-montserrat font-medium ${
+                        isActive(subItem.to)
+                          ? "text-primary bg-accent"
+                          : "text-foreground hover:text-primary hover:bg-accent"
+                      }`}
+                    >
+                      {subItem.label}
+                    </Link>
+                  ))}
                 </div>
               );
             })}
