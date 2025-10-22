@@ -31,26 +31,26 @@ const Navigation = () => {
     {
       label: "About",
       items: [
-        { to: "/about", label: "Mission & History" },
-        { to: "/leadership", label: "Leadership" },
+        { to: "/about", label: "Our Mission" },
+        { to: "/leadership", label: "Leadership Team" },
       ],
     },
     {
-      label: "Get Involved",
+      label: "Join the Movement",
       items: [
-        { to: "/get-involved", label: "Join Us / Volunteer" },
-        { to: "/events", label: "Event Calendar" },
+        { to: "/get-involved", label: "Volunteer" },
+        { to: "/events", label: "Events" },
         { to: "/polar-plunge", label: "Polar Plunge" },
       ],
     },
     {
-      label: "Sponsors",
+      label: "Support Us",
       items: [
-        { to: "/sponsors", label: "Current Sponsors" },
+        { to: "/sponsors", label: "Our Partners" },
         { to: "/become-a-sponsor", label: "Become a Sponsor" },
       ],
     },
-    { to: "/contact", label: "Contact" },
+    { to: "/contact", label: "Connect" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
