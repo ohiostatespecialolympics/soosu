@@ -50,7 +50,7 @@ const Navigation = () => {
         { to: "/become-a-sponsor", label: "Become a Sponsor" },
       ],
     },
-    { to: "/contact", label: "Connect" },
+    { to: "/contact", label: "Contact" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
