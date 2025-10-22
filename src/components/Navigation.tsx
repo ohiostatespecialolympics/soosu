@@ -89,41 +89,41 @@ const Navigation = () => {
               }
 
               return (
-                <div key={index} className="flex items-center">
-                  <Link
-                    to={item.to}
-                    className={`px-3 py-2 rounded-md text-sm font-montserrat font-medium transition-colors ${
-                      isActive(item.to) || isGroupActive(item.items)
-                        ? "text-primary bg-accent"
-                        : "text-foreground hover:text-primary hover:bg-accent"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                  <DropdownMenu>
+                <DropdownMenu key={index}>
+                  <div className="flex items-center gap-1">
+                    <Link
+                      to={item.to}
+                      className={`px-3 py-2 rounded-md text-sm font-montserrat font-medium transition-colors ${
+                        isActive(item.to) || isGroupActive(item.items)
+                          ? "text-primary bg-accent"
+                          : "text-foreground hover:text-primary hover:bg-accent"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
                     <DropdownMenuTrigger className={`px-2 py-2 rounded-md text-sm font-montserrat font-medium transition-colors inline-flex items-center ${
                       isActive(item.to) || isGroupActive(item.items)
                         ? "text-primary bg-accent"
                         : "text-foreground hover:text-primary hover:bg-accent"
                     }`}>
-                      <ChevronDown className="h-3 w-3" />
+                      <ChevronDown className="h-4 w-4" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-background border-border">
-                      {item.items.map((subItem) => (
-                        <DropdownMenuItem key={subItem.to} asChild>
-                          <Link
-                            to={subItem.to}
-                            className={`font-montserrat cursor-pointer ${
-                              isActive(subItem.to) ? "text-primary" : ""
-                            }`}
-                          >
-                            {subItem.label}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                  </div>
+                  <DropdownMenuContent className="bg-background border-border z-50">
+                    {item.items.map((subItem) => (
+                      <DropdownMenuItem key={subItem.to} asChild>
+                        <Link
+                          to={subItem.to}
+                          className={`font-montserrat cursor-pointer ${
+                            isActive(subItem.to) ? "text-primary" : ""
+                          }`}
+                        >
+                          {subItem.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               );
             })}
             
