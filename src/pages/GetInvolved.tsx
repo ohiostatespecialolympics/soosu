@@ -158,7 +158,7 @@ const GetInvolved = () => {
           <p className="font-montserrat text-muted-foreground mb-6">
             We'd love to hear from you. Visit our contact page to reach out directly.
           </p>
-          <Link href="/contact">
+          <Link to="/contact">
             <Button className="font-montserrat font-semibold px-8 py-3">
               Go to Contact Page
             </Button>
