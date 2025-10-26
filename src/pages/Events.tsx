@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,81 +13,64 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  event_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  event_type: string | null;
+}
 
 const Events = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [viewMode, setViewMode] = useState<"month" | "week" | "list">("month");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState<typeof upcomingEvents[0] | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [filter, setFilter] = useState("all");
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Basketball Practice",
-      date: "March 15, 2025",
-      time: "6:00 PM - 8:00 PM",
-      location: "OSU Recreation Center",
-      category: "sports",
-      description: "Weekly basketball practice for Special Olympics athletes. Volunteers needed to assist with drills and scrimmages.",
-      volunteers: 8,
-    },
-    {
-      id: 2,
-      title: "Polar Plunge 2025",
-      date: "March 22, 2025",
-      time: "10:00 AM - 2:00 PM",
-      location: "Mirror Lake",
-      category: "fundraiser",
-      description: "Our biggest fundraising event of the year! Take the plunge into icy Mirror Lake to support Special Olympics.",
-      volunteers: 50,
-    },
-    {
-      id: 3,
-      title: "Volunteer Training Session",
-      date: "March 28, 2025",
-      time: "7:00 PM - 8:30 PM",
-      location: "Ohio Union, Room 2070",
-      category: "volunteer",
-      description: "Required orientation for new volunteers. Learn about our organization, meet our team, and get certified.",
-      volunteers: 15,
-    },
-    {
-      id: 4,
-      title: "Track & Field Competition",
-      date: "April 5, 2025",
-      time: "9:00 AM - 4:00 PM",
-      location: "Jesse Owens Memorial Stadium",
-      category: "sports",
-      description: "Regional track and field competition. Athletes will compete in various running, jumping, and throwing events.",
-      volunteers: 30,
-    },
-  ];
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
-  const pastEvents = [
-    {
-      title: "Fall Sports Day",
-      date: "November 10, 2024",
-      participants: 45,
-      image: "placeholder",
-    },
-    {
-      title: "Polar Plunge 2024",
-      date: "March 23, 2024",
-      participants: 120,
-      image: "placeholder",
-    },
-  ];
+  const fetchEvents = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .order("event_date", { ascending: true });
 
-  const filteredEvents = upcomingEvents.filter((event) => {
-    const matchesFilter = filter === "all" || event.category === filter;
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load events.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    setEvents(data || []);
+    setLoading(false);
+  };
+
+  const filteredEvents = events.filter((event) => {
+    const matchesFilter = filter === "all" || event.event_type === filter;
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.location.toLowerCase().includes(searchQuery.toLowerCase());
+                         (event.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+                         (event.location?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     return matchesFilter && matchesSearch;
   });
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category: string | null) => {
     switch (category) {
       case "sports": return "bg-blue-500";
       case "fundraiser": return "bg-green-500";
@@ -96,7 +79,7 @@ const Events = () => {
     }
   };
 
-  const getCategoryBadge = (category: string) => {
+  const getCategoryBadge = (category: string | null) => {
     const colors = {
       sports: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
       fundraiser: "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20",
@@ -104,6 +87,31 @@ const Events = () => {
     };
     return colors[category as keyof typeof colors] || "bg-gray-500/10 text-gray-700 dark:text-gray-300";
   };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  const formatTime = (timeStr: string | null) => {
+    if (!timeStr) return "";
+    return new Date(`2000-01-01T${timeStr}`).toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg">Loading events...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-16 px-4">
@@ -117,9 +125,8 @@ const Events = () => {
         </p>
 
         <Tabs defaultValue="upcoming" className="mb-12">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-            <TabsTrigger value="upcoming" className="font-montserrat">Upcoming Events</TabsTrigger>
-            <TabsTrigger value="past" className="font-montserrat">Past Events</TabsTrigger>
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-1">
+            <TabsTrigger value="upcoming" className="font-montserrat">Events</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-8">
@@ -231,7 +238,7 @@ const Events = () => {
                       <div key={i} className="min-h-32 border rounded p-2 bg-card hover:bg-accent/50 transition-colors">
                         <div className="font-montserrat text-sm font-semibold mb-2">{currentDate.getDate()}</div>
                         {filteredEvents.slice(0, 1).map(event => (
-                          <div key={event.id} className={`text-xs p-1 rounded mb-1 ${getCategoryColor(event.category)} text-white cursor-pointer`}
+                          <div key={event.id} className={`text-xs p-1 rounded mb-1 ${getCategoryColor(event.event_type)} text-white cursor-pointer`}
                                onClick={() => setSelectedEvent(event)}>
                             {event.title}
                           </div>
@@ -246,46 +253,61 @@ const Events = () => {
             {/* List/Grid View */}
             {viewMode === "list" && (
               <div className="space-y-4 animate-fade-in">
-                {filteredEvents.map((event) => (
-                  <Card 
-                    key={event.id} 
-                    className="cursor-pointer hover:shadow-lg transition-all hover-scale"
-                    onClick={() => setSelectedEvent(event)}
-                  >
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge className={getCategoryBadge(event.category)}>
-                              {event.category}
-                            </Badge>
-                          </div>
-                          <CardTitle className="font-oswald text-2xl">{event.title}</CardTitle>
-                        </div>
-                        <div className={`w-3 h-3 rounded-full ${getCategoryColor(event.category)}`}></div>
-                      </div>
-                      <CardDescription className="font-montserrat space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>{event.date} • {event.time}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          <span>{event.location}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
-                          <span>{event.volunteers} volunteers needed</span>
-                        </div>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="font-montserrat text-muted-foreground mb-4">
-                        {event.description}
-                      </p>
+                {filteredEvents.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <p className="text-muted-foreground">No events found.</p>
                     </CardContent>
                   </Card>
-                ))}
+                ) : (
+                  filteredEvents.map((event) => (
+                    <Card 
+                      key={event.id} 
+                      className="cursor-pointer hover:shadow-lg transition-all hover-scale"
+                      onClick={() => setSelectedEvent(event)}
+                    >
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            {event.event_type && (
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge className={getCategoryBadge(event.event_type)}>
+                                  {event.event_type}
+                                </Badge>
+                              </div>
+                            )}
+                            <CardTitle className="font-oswald text-2xl">{event.title}</CardTitle>
+                          </div>
+                          <div className={`w-3 h-3 rounded-full ${getCategoryColor(event.event_type)}`}></div>
+                        </div>
+                        <CardDescription className="font-montserrat space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            <span>
+                              {formatDate(event.event_date)}
+                              {event.start_time && event.end_time && 
+                                ` • ${formatTime(event.start_time)} - ${formatTime(event.end_time)}`
+                              }
+                            </span>
+                          </div>
+                          {event.location && (
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              <span>{event.location}</span>
+                            </div>
+                          )}
+                        </CardDescription>
+                      </CardHeader>
+                      {event.description && (
+                        <CardContent>
+                          <p className="font-montserrat text-muted-foreground mb-4">
+                            {event.description}
+                          </p>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))
+                )}
               </div>
             )}
 
@@ -293,31 +315,38 @@ const Events = () => {
             <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className={getCategoryBadge(selectedEvent?.category || "")}>
-                      {selectedEvent?.category}
-                    </Badge>
-                  </div>
+                  {selectedEvent?.event_type && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={getCategoryBadge(selectedEvent.event_type)}>
+                        {selectedEvent.event_type}
+                      </Badge>
+                    </div>
+                  )}
                   <DialogTitle className="font-oswald text-3xl">{selectedEvent?.title}</DialogTitle>
                   <DialogDescription className="font-montserrat space-y-3 text-base">
                     <div className="flex items-center gap-2">
                       <Clock className="h-5 w-5" />
-                      <span>{selectedEvent?.date} • {selectedEvent?.time}</span>
+                      <span>
+                        {selectedEvent && formatDate(selectedEvent.event_date)}
+                        {selectedEvent?.start_time && selectedEvent?.end_time && 
+                          ` • ${formatTime(selectedEvent.start_time)} - ${formatTime(selectedEvent.end_time)}`
+                        }
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5" />
-                      <span>{selectedEvent?.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      <span>{selectedEvent?.volunteers} volunteers needed</span>
-                    </div>
+                    {selectedEvent?.location && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5" />
+                        <span>{selectedEvent.location}</span>
+                      </div>
+                    )}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="mt-4">
-                  <p className="font-montserrat text-foreground mb-6">
-                    {selectedEvent?.description}
-                  </p>
+                  {selectedEvent?.description && (
+                    <p className="font-montserrat text-foreground mb-6">
+                      {selectedEvent.description}
+                    </p>
+                  )}
                   <div className="flex gap-3">
                     <Button className="font-montserrat font-semibold flex-1">
                       Sign Up to Volunteer
@@ -329,29 +358,6 @@ const Events = () => {
                 </div>
               </DialogContent>
             </Dialog>
-          </TabsContent>
-
-          <TabsContent value="past" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {pastEvents.map((event, index) => (
-                <Card key={index}>
-                  <div className="aspect-video bg-muted flex items-center justify-center">
-                    <p className="text-muted-foreground font-montserrat">Event Photo</p>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="font-oswald text-xl">{event.title}</CardTitle>
-                    <CardDescription className="font-montserrat">
-                      {event.date} • {event.participants} participants
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="font-montserrat text-muted-foreground">
-                      A memorable event that brought our community together to support Special Olympics athletes.
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </TabsContent>
         </Tabs>
       </div>

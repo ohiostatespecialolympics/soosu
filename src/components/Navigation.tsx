@@ -104,6 +104,7 @@ const Navigation = () => {
       ],
     },
     { to: "/contact", label: "Contact" },
+    { to: "/auth", label: "Admin Login" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

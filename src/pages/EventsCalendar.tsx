@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CalendarBody,
   CalendarDate,
@@ -23,65 +23,70 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Search } from "lucide-react";
-import { addMonths, endOfMonth, startOfMonth } from "date-fns";
-
-const today = new Date();
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const eventStatuses: Status[] = [
   { id: "sports", name: "Sports", color: "#3B82F6" },
   { id: "fundraiser", name: "Fundraiser", color: "#10B981" },
   { id: "volunteer", name: "Volunteer", color: "#8B5CF6" },
+  { id: "other", name: "Other", color: "#6B7280" },
 ];
 
-const eventsData: Feature[] = [
-  {
-    id: "1",
-    name: "Basketball Practice",
-    startAt: startOfMonth(today),
-    endAt: new Date(2025, 2, 15),
-    status: eventStatuses[0],
-  },
-  {
-    id: "2",
-    name: "Polar Plunge 2025",
-    startAt: startOfMonth(today),
-    endAt: new Date(2025, 2, 22),
-    status: eventStatuses[1],
-  },
-  {
-    id: "3",
-    name: "Volunteer Training",
-    startAt: startOfMonth(today),
-    endAt: new Date(2025, 2, 28),
-    status: eventStatuses[2],
-  },
-  {
-    id: "4",
-    name: "Track & Field Competition",
-    startAt: startOfMonth(addMonths(today, 1)),
-    endAt: new Date(2025, 3, 5),
-    status: eventStatuses[0],
-  },
-  {
-    id: "5",
-    name: "Swimming Practice",
-    startAt: startOfMonth(addMonths(today, 1)),
-    endAt: new Date(2025, 3, 12),
-    status: eventStatuses[0],
-  },
-  {
-    id: "6",
-    name: "Spring Fundraiser Gala",
-    startAt: startOfMonth(addMonths(today, 1)),
-    endAt: new Date(2025, 3, 20),
-    status: eventStatuses[1],
-  },
-];
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  event_date: string;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  event_type: string | null;
+}
 
 const EventsCalendar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedEvent, setSelectedEvent] = useState<Feature | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("events")
+      .select("*")
+      .order("event_date", { ascending: true });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load events.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    setEvents(data || []);
+    setLoading(false);
+  };
+
+  const eventsData: Feature[] = events.map((event) => {
+    const status = eventStatuses.find(s => s.id === event.event_type) || eventStatuses[3];
+    return {
+      id: event.id,
+      name: event.title,
+      startAt: new Date(event.event_date),
+      endAt: new Date(event.event_date),
+      status,
+    };
+  });
 
   const filteredEvents = eventsData.filter((event) => {
     const matchesFilter = filter === "all" || event.status.id === filter;
@@ -89,17 +94,30 @@ const EventsCalendar = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const earliestYear = Math.min(...eventsData.map((e) => e.startAt.getFullYear()));
-  const latestYear = Math.max(...eventsData.map((e) => e.endAt.getFullYear()));
+  const earliestYear = events.length > 0 
+    ? Math.min(...events.map((e) => new Date(e.event_date).getFullYear()))
+    : new Date().getFullYear();
+  const latestYear = events.length > 0
+    ? Math.max(...events.map((e) => new Date(e.event_date).getFullYear()))
+    : new Date().getFullYear() + 1;
 
   const getCategoryBadge = (categoryId: string) => {
     const colors = {
       sports: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
       fundraiser: "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20",
       volunteer: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
+      other: "bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20",
     };
     return colors[categoryId as keyof typeof colors] || "bg-gray-500/10 text-gray-700 dark:text-gray-300";
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg">Loading events...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-16 px-4">
@@ -149,28 +167,34 @@ const EventsCalendar = () => {
         </div>
 
         {/* Full Calendar */}
-        <div className="mb-8">
-          <CalendarProvider className="min-h-[600px]">
-            <CalendarDate>
-              <CalendarDatePicker>
-                <CalendarMonthPicker />
-                <CalendarYearPicker start={earliestYear} end={latestYear} />
-              </CalendarDatePicker>
-              <CalendarDatePagination />
-            </CalendarDate>
-            <CalendarHeader />
-            <CalendarBody features={filteredEvents}>
-              {({ feature }) => (
-                <div
-                  onClick={() => setSelectedEvent(feature)}
-                  className="cursor-pointer"
-                >
-                  <CalendarItem key={feature.id} feature={feature} />
-                </div>
-              )}
-            </CalendarBody>
-          </CalendarProvider>
-        </div>
+        {events.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No events scheduled yet.</p>
+          </div>
+        ) : (
+          <div className="mb-8">
+            <CalendarProvider className="min-h-[600px]">
+              <CalendarDate>
+                <CalendarDatePicker>
+                  <CalendarMonthPicker />
+                  <CalendarYearPicker start={earliestYear} end={latestYear} />
+                </CalendarDatePicker>
+                <CalendarDatePagination />
+              </CalendarDate>
+              <CalendarHeader />
+              <CalendarBody features={filteredEvents}>
+                {({ feature }) => (
+                  <div
+                    onClick={() => setSelectedEvent(feature)}
+                    className="cursor-pointer"
+                  >
+                    <CalendarItem key={feature.id} feature={feature} />
+                  </div>
+                )}
+              </CalendarBody>
+            </CalendarProvider>
+          </div>
+        )}
 
         {/* Event Detail Dialog */}
         <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
