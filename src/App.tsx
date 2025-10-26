@@ -18,6 +18,7 @@ import BecomeASponsor from "./pages/BecomeASponsor";
 import Leadership from "./pages/Leadership";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import DonationSuccess from "./pages/DonationSuccess";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/become-a-sponsor" element={<BecomeASponsor />} />
               <Route path="/leadership" element={<Leadership />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/donation-success" element={<DonationSuccess />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
