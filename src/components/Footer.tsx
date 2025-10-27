@@ -37,6 +37,11 @@ const Footer = () => {
                   Become a Sponsor
                 </a>
               </li>
+              <li>
+                <a href="/auth" className="hover:text-primary transition-colors">
+                  Admin Login
+                </a>
+              </li>
             </ul>
           </div>
 
