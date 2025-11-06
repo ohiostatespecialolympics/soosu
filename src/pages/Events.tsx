@@ -3,7 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Clock, Users, Search, Calendar as CalendarIcon, List, Grid3x3 } from "lucide-react";
+import { MapPin, Clock, Users, Search, Calendar as CalendarIcon, List, Grid3x3, Plus, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -15,6 +15,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Event {
   id: string;
@@ -69,6 +75,32 @@ const Events = () => {
                          (event.location?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     return matchesFilter && matchesSearch;
   });
+
+  const getCalendarFeedUrl = () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    return `${supabaseUrl}/functions/v1/calendar-feed`;
+  };
+
+  const handleSubscribeCalendar = (type: 'google' | 'apple' | 'outlook') => {
+    const feedUrl = getCalendarFeedUrl();
+    
+    switch (type) {
+      case 'google':
+        window.open(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(feedUrl)}`, '_blank');
+        break;
+      case 'apple':
+        window.location.href = `webcal://${feedUrl.replace(/^https?:\/\//, '')}`;
+        break;
+      case 'outlook':
+        window.open(`https://outlook.live.com/owa/?path=/calendar/action/compose&rru=addsubscription&url=${encodeURIComponent(feedUrl)}&name=Special%20Olympics%20Events`, '_blank');
+        break;
+    }
+  };
+
+  const handleDownloadCalendar = () => {
+    const feedUrl = getCalendarFeedUrl();
+    window.open(feedUrl, '_blank');
+  };
 
   const getCategoryColor = (category: string | null) => {
     switch (category) {
@@ -142,7 +174,33 @@ const Events = () => {
                 />
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-center">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="gap-2 font-montserrat">
+                      <Plus className="h-4 w-4" />
+                      Subscribe to Calendar
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={() => handleSubscribeCalendar('google')}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      Add to Google Calendar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleSubscribeCalendar('apple')}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      Add to Apple Calendar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleSubscribeCalendar('outlook')}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      Add to Outlook Calendar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDownloadCalendar}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Calendar File
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant={viewMode === "month" ? "default" : "outline"}
                   size="sm"
