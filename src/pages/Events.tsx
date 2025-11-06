@@ -210,13 +210,92 @@ const Events = () => {
 
             {/* Calendar View */}
             {viewMode === "month" && (
-              <div className="flex justify-center mb-8 animate-fade-in">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-md border shadow-sm"
-                />
+              <div className="mb-8 animate-fade-in space-y-4">
+                <div className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    className="rounded-md border shadow-sm"
+                    modifiers={{
+                      hasEvent: filteredEvents.map(e => new Date(e.event_date))
+                    }}
+                    modifiersStyles={{
+                      hasEvent: {
+                        fontWeight: 'bold',
+                        textDecoration: 'underline',
+                        color: 'hsl(var(--primary))'
+                      }
+                    }}
+                  />
+                </div>
+                {date && (
+                  <div className="space-y-4">
+                    <h3 className="font-oswald text-xl font-semibold text-center">
+                      Events on {formatDate(date.toISOString().split('T')[0])}
+                    </h3>
+                    {filteredEvents.filter(event => {
+                      const eventDate = new Date(event.event_date).toDateString();
+                      return eventDate === date.toDateString();
+                    }).length === 0 ? (
+                      <Card>
+                        <CardContent className="py-8 text-center">
+                          <p className="text-muted-foreground">No events on this date.</p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      filteredEvents.filter(event => {
+                        const eventDate = new Date(event.event_date).toDateString();
+                        return eventDate === date.toDateString();
+                      }).map((event) => (
+                        <Card 
+                          key={event.id} 
+                          className="cursor-pointer hover:shadow-lg transition-all hover-scale"
+                          onClick={() => setSelectedEvent(event)}
+                        >
+                          <CardHeader>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                {event.event_type && (
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Badge className={getCategoryBadge(event.event_type)}>
+                                      {event.event_type}
+                                    </Badge>
+                                  </div>
+                                )}
+                                <CardTitle className="font-oswald text-2xl">{event.title}</CardTitle>
+                              </div>
+                              <div className={`w-3 h-3 rounded-full ${getCategoryColor(event.event_type)}`}></div>
+                            </div>
+                            <CardDescription className="font-montserrat space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                <span>
+                                  {event.start_time && event.end_time && 
+                                    `${formatTime(event.start_time)} - ${formatTime(event.end_time)}`
+                                  }
+                                </span>
+                              </div>
+                              {event.location && (
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{event.location}</span>
+                                </div>
+                              )}
+                            </CardDescription>
+                          </CardHeader>
+                          {event.description && (
+                            <CardContent>
+                              <p className="font-montserrat text-muted-foreground">
+                                {event.description}
+                              </p>
+                            </CardContent>
+                          )}
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -234,10 +313,14 @@ const Events = () => {
                   {Array.from({ length: 7 }, (_, i) => {
                     const currentDate = new Date();
                     currentDate.setDate(currentDate.getDate() - currentDate.getDay() + i);
+                    const dayEvents = filteredEvents.filter(event => {
+                      const eventDate = new Date(event.event_date);
+                      return eventDate.toDateString() === currentDate.toDateString();
+                    });
                     return (
                       <div key={i} className="min-h-32 border rounded p-2 bg-card hover:bg-accent/50 transition-colors">
                         <div className="font-montserrat text-sm font-semibold mb-2">{currentDate.getDate()}</div>
-                        {filteredEvents.slice(0, 1).map(event => (
+                        {dayEvents.map(event => (
                           <div key={event.id} className={`text-xs p-1 rounded mb-1 ${getCategoryColor(event.event_type)} text-white cursor-pointer`}
                                onClick={() => setSelectedEvent(event)}>
                             {event.title}
