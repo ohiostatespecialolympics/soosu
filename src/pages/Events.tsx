@@ -77,8 +77,7 @@ const Events = () => {
   });
 
   const getCalendarFeedUrl = () => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    return `${supabaseUrl}/functions/v1/calendar-feed`;
+    return 'https://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed';
   };
 
   const handleSubscribeCalendar = (type: 'google' | 'apple' | 'outlook') => {
@@ -86,13 +85,13 @@ const Events = () => {
     
     switch (type) {
       case 'google':
-        window.open(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(feedUrl)}`, '_blank');
+        window.open(`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(feedUrl)}`, '_blank');
         break;
       case 'apple':
-        window.location.href = `webcal://${feedUrl.replace(/^https?:\/\//, '')}`;
+        window.location.href = `webcal://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed`;
         break;
       case 'outlook':
-        window.open(`https://outlook.live.com/owa/?path=/calendar/action/compose&rru=addsubscription&url=${encodeURIComponent(feedUrl)}&name=Special%20Olympics%20Events`, '_blank');
+        window.open(`https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(feedUrl)}&name=${encodeURIComponent('Special Olympics Events')}`, '_blank');
         break;
     }
   };
