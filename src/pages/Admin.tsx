@@ -10,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Type, Upload, X } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Type, Upload, X, Repeat, CalendarPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { addDays, addWeeks, addMonths, format, parseISO } from "date-fns";
 
 interface Event {
   id: string;
@@ -72,6 +73,18 @@ export default function Admin() {
     location: "",
     event_type: "",
   });
+
+  // Recurring event state
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState<"daily" | "weekly" | "monthly">("weekly");
+  const [recurringEndDate, setRecurringEndDate] = useState("");
+  const [recurringOccurrences, setRecurringOccurrences] = useState(5);
+  const [recurringEndType, setRecurringEndType] = useState<"date" | "occurrences">("occurrences");
+
+  // Bulk event state
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [bulkDates, setBulkDates] = useState<string[]>([]);
+  const [newBulkDate, setNewBulkDate] = useState("");
 
   const [leadershipFormData, setLeadershipFormData] = useState({
     name: "",
@@ -193,6 +206,38 @@ export default function Admin() {
     setSponsors(data || []);
   };
 
+  const generateRecurringDates = (startDate: string): string[] => {
+    const dates: string[] = [];
+    let currentDate = parseISO(startDate);
+    
+    if (recurringEndType === "occurrences") {
+      for (let i = 0; i < recurringOccurrences; i++) {
+        dates.push(format(currentDate, "yyyy-MM-dd"));
+        if (recurringFrequency === "daily") {
+          currentDate = addDays(currentDate, 1);
+        } else if (recurringFrequency === "weekly") {
+          currentDate = addWeeks(currentDate, 1);
+        } else if (recurringFrequency === "monthly") {
+          currentDate = addMonths(currentDate, 1);
+        }
+      }
+    } else {
+      const endDate = parseISO(recurringEndDate);
+      while (currentDate <= endDate) {
+        dates.push(format(currentDate, "yyyy-MM-dd"));
+        if (recurringFrequency === "daily") {
+          currentDate = addDays(currentDate, 1);
+        } else if (recurringFrequency === "weekly") {
+          currentDate = addWeeks(currentDate, 1);
+        } else if (recurringFrequency === "monthly") {
+          currentDate = addMonths(currentDate, 1);
+        }
+      }
+    }
+    
+    return dates;
+  };
+
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -208,15 +253,37 @@ export default function Admin() {
       }
       toast({ title: "Success", description: "Event updated successfully." });
     } else {
+      // Determine which dates to create events for
+      let datesToCreate: string[] = [];
+      
+      if (isBulkMode && bulkDates.length > 0) {
+        datesToCreate = bulkDates;
+      } else if (isRecurring) {
+        datesToCreate = generateRecurringDates(eventFormData.event_date);
+      } else {
+        datesToCreate = [eventFormData.event_date];
+      }
+
+      // Create events for all dates
+      const eventsToInsert = datesToCreate.map(date => ({
+        ...eventFormData,
+        event_date: date,
+      }));
+
       const { error } = await supabase
         .from("events")
-        .insert([eventFormData]);
+        .insert(eventsToInsert);
 
       if (error) {
-        toast({ title: "Error", description: "Failed to create event.", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to create event(s).", variant: "destructive" });
         return;
       }
-      toast({ title: "Success", description: "Event created successfully." });
+      
+      const eventCount = eventsToInsert.length;
+      toast({ 
+        title: "Success", 
+        description: `${eventCount} event${eventCount > 1 ? 's' : ''} created successfully.` 
+      });
     }
 
     resetEventForm();
@@ -402,6 +469,14 @@ export default function Admin() {
   const resetEventForm = () => {
     setEditingEvent(null);
     setEventFormData({ title: "", description: "", event_date: "", start_time: "", end_time: "", location: "", event_type: "" });
+    setIsRecurring(false);
+    setRecurringFrequency("weekly");
+    setRecurringEndDate("");
+    setRecurringOccurrences(5);
+    setRecurringEndType("occurrences");
+    setIsBulkMode(false);
+    setBulkDates([]);
+    setNewBulkDate("");
   };
 
   const resetLeadershipForm = () => {
@@ -583,6 +658,170 @@ export default function Admin() {
                       />
                     </div>
                   </div>
+
+                  {/* Recurring Event Toggle */}
+                  {!editingEvent && !isBulkMode && (
+                    <div className="flex items-center gap-3 pt-4 border-t">
+                      <Repeat className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex-1 flex items-center justify-between">
+                        <Label htmlFor="recurring" className="text-sm font-medium">Recurring Event</Label>
+                        <Switch
+                          id="recurring"
+                          checked={isRecurring}
+                          onCheckedChange={(checked) => {
+                            setIsRecurring(checked);
+                            if (checked) setIsBulkMode(false);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recurring Event Options */}
+                  {isRecurring && !editingEvent && (
+                    <div className="space-y-4 pl-8 bg-muted/30 p-4 rounded-lg">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Frequency</Label>
+                          <Select
+                            value={recurringFrequency}
+                            onValueChange={(value: any) => setRecurringFrequency(value)}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="daily">Daily</SelectItem>
+                              <SelectItem value="weekly">Weekly</SelectItem>
+                              <SelectItem value="monthly">Monthly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">End Type</Label>
+                          <Select
+                            value={recurringEndType}
+                            onValueChange={(value: any) => setRecurringEndType(value)}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="occurrences">After # of times</SelectItem>
+                              <SelectItem value="date">On specific date</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {recurringEndType === "occurrences" ? (
+                        <div>
+                          <Label htmlFor="occurrences" className="text-xs text-muted-foreground">
+                            Number of Occurrences
+                          </Label>
+                          <Input
+                            id="occurrences"
+                            type="number"
+                            min="1"
+                            max="365"
+                            value={recurringOccurrences}
+                            onChange={(e) => setRecurringOccurrences(parseInt(e.target.value) || 1)}
+                            className="mt-1"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <Label htmlFor="endDate" className="text-xs text-muted-foreground">
+                            End Date
+                          </Label>
+                          <Input
+                            id="endDate"
+                            type="date"
+                            value={recurringEndDate}
+                            onChange={(e) => setRecurringEndDate(e.target.value)}
+                            className="mt-1"
+                            min={eventFormData.event_date}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Bulk Mode Toggle */}
+                  {!editingEvent && !isRecurring && (
+                    <div className="flex items-center gap-3 pt-4 border-t">
+                      <CalendarPlus className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex-1 flex items-center justify-between">
+                        <Label htmlFor="bulk" className="text-sm font-medium">Bulk Create (Multiple Dates)</Label>
+                        <Switch
+                          id="bulk"
+                          checked={isBulkMode}
+                          onCheckedChange={(checked) => {
+                            setIsBulkMode(checked);
+                            if (checked) {
+                              setIsRecurring(false);
+                              if (eventFormData.event_date && !bulkDates.includes(eventFormData.event_date)) {
+                                setBulkDates([eventFormData.event_date]);
+                              }
+                            } else {
+                              setBulkDates([]);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bulk Dates */}
+                  {isBulkMode && !editingEvent && (
+                    <div className="space-y-3 pl-8 bg-muted/30 p-4 rounded-lg">
+                      <div className="flex gap-2">
+                        <Input
+                          type="date"
+                          value={newBulkDate}
+                          onChange={(e) => setNewBulkDate(e.target.value)}
+                          placeholder="Add date"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            if (newBulkDate && !bulkDates.includes(newBulkDate)) {
+                              setBulkDates([...bulkDates, newBulkDate].sort());
+                              setNewBulkDate("");
+                            }
+                          }}
+                          size="sm"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      {bulkDates.length > 0 && (
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">
+                            Selected Dates ({bulkDates.length})
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {bulkDates.map((date) => (
+                              <div
+                                key={date}
+                                className="flex items-center gap-1 bg-background px-2 py-1 rounded-md text-xs border"
+                              >
+                                <span>{format(parseISO(date), "MMM dd, yyyy")}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setBulkDates(bulkDates.filter(d => d !== date))}
+                                  className="hover:text-destructive"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
                   <div className="flex justify-end gap-3 pt-4 border-t">
