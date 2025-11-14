@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { Loader2, Plus, Pencil, Trash2, LogOut } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Type, Upload, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 
 interface Event {
   id: string;
@@ -80,6 +81,9 @@ export default function Admin() {
     image_url: "",
     display_order: 0,
   });
+
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string>("");
 
   const [sponsorFormData, setSponsorFormData] = useState({
     name: "",
@@ -220,35 +224,76 @@ export default function Admin() {
     fetchEvents();
   };
 
+  const handleFileUpload = async (file: File) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('leadership-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('leadership-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return null;
+    }
+  };
+
   const handleLeadershipSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingLeadership) {
-      const { error } = await supabase
-        .from("leadership_members")
-        .update(leadershipFormData)
-        .eq("id", editingLeadership.id);
+    try {
+      let imageUrl = leadershipFormData.image_url;
 
-      if (error) {
-        toast({ title: "Error", description: "Failed to update member.", variant: "destructive" });
-        return;
+      // Upload file if a new one was selected
+      if (uploadedFile) {
+        const uploadedUrl = await handleFileUpload(uploadedFile);
+        if (!uploadedUrl) return;
+        imageUrl = uploadedUrl;
       }
-      toast({ title: "Success", description: "Leadership member updated successfully." });
-    } else {
-      const { error } = await supabase
-        .from("leadership_members")
-        .insert([leadershipFormData]);
 
-      if (error) {
-        toast({ title: "Error", description: "Failed to create member.", variant: "destructive" });
-        return;
+      const dataToSubmit = {
+        ...leadershipFormData,
+        image_url: imageUrl
+      };
+
+      if (editingLeadership) {
+        const { error } = await supabase
+          .from("leadership_members")
+          .update(dataToSubmit)
+          .eq("id", editingLeadership.id);
+
+        if (error) {
+          toast({ title: "Error", description: "Failed to update member.", variant: "destructive" });
+          return;
+        }
+        toast({ title: "Success", description: "Leadership member updated successfully." });
+      } else {
+        const { error } = await supabase
+          .from("leadership_members")
+          .insert([dataToSubmit]);
+
+        if (error) {
+          toast({ title: "Error", description: "Failed to create member.", variant: "destructive" });
+          return;
+        }
+        toast({ title: "Success", description: "Leadership member created successfully." });
       }
-      toast({ title: "Success", description: "Leadership member created successfully." });
+
+      resetLeadershipForm();
+      setLeadershipDialogOpen(false);
+      fetchLeadershipMembers();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
-
-    resetLeadershipForm();
-    setLeadershipDialogOpen(false);
-    fetchLeadershipMembers();
   };
 
   const handleSponsorSubmit = async (e: React.FormEvent) => {
@@ -362,6 +407,8 @@ export default function Admin() {
   const resetLeadershipForm = () => {
     setEditingLeadership(null);
     setLeadershipFormData({ name: "", position: "", bio: "", quote: "", image_url: "", display_order: 0 });
+    setUploadedFile(null);
+    setUploadPreview("");
   };
 
   const resetSponsorForm = () => {
@@ -425,45 +472,127 @@ export default function Admin() {
               <DialogTrigger asChild>
                 <Button className="mb-4"><Plus className="h-4 w-4 mr-2" />Add Event</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingEvent ? "Edit Event" : "Create Event"}</DialogTitle>
-                  <DialogDescription>Fill in the event details below.</DialogDescription>
+                  <DialogTitle className="text-2xl font-semibold">{editingEvent ? "Edit Event" : "Create Event"}</DialogTitle>
+                  <DialogDescription>Add event details to your calendar</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleEventSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">Title *</Label>
-                    <Input id="title" value={eventFormData.title} onChange={(e) => setEventFormData({ ...eventFormData, title: e.target.value })} required />
+                <form onSubmit={handleEventSubmit} className="space-y-6">
+                  {/* Title */}
+                  <div className="space-y-2">
+                    <Input 
+                      id="title" 
+                      value={eventFormData.title} 
+                      onChange={(e) => setEventFormData({ ...eventFormData, title: e.target.value })} 
+                      placeholder="Add title"
+                      className="text-2xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                      required 
+                    />
                   </div>
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" value={eventFormData.description} onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })} rows={3} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="event_date">Date *</Label>
-                      <Input id="event_date" type="date" value={eventFormData.event_date} onChange={(e) => setEventFormData({ ...eventFormData, event_date: e.target.value })} required />
+
+                  {/* Date and Time Section */}
+                  <div className="space-y-4 p-4 bg-accent/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="event_date" className="text-xs text-muted-foreground">Date</Label>
+                          <Input 
+                            id="event_date" 
+                            type="date" 
+                            value={eventFormData.event_date} 
+                            onChange={(e) => setEventFormData({ ...eventFormData, event_date: e.target.value })} 
+                            className="mt-1"
+                            required 
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="event_type" className="text-xs text-muted-foreground">Event Type</Label>
+                          <Select
+                            value={eventFormData.event_type}
+                            onValueChange={(value) => setEventFormData({ ...eventFormData, event_type: value })}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Fundraiser">Fundraiser</SelectItem>
+                              <SelectItem value="Community Event">Community Event</SelectItem>
+                              <SelectItem value="Sports Event">Sports Event</SelectItem>
+                              <SelectItem value="Meeting">Meeting</SelectItem>
+                              <SelectItem value="Workshop">Workshop</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="event_type">Type</Label>
-                      <Input id="event_type" value={eventFormData.event_type} onChange={(e) => setEventFormData({ ...eventFormData, event_type: e.target.value })} placeholder="e.g., Fundraiser" />
+
+                    <div className="flex items-center gap-3">
+                      <Clock className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex-1 grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="start_time" className="text-xs text-muted-foreground">Start Time</Label>
+                          <Input 
+                            id="start_time" 
+                            type="time" 
+                            value={eventFormData.start_time} 
+                            onChange={(e) => setEventFormData({ ...eventFormData, start_time: e.target.value })} 
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="end_time" className="text-xs text-muted-foreground">End Time</Label>
+                          <Input 
+                            id="end_time" 
+                            type="time" 
+                            value={eventFormData.end_time} 
+                            onChange={(e) => setEventFormData({ ...eventFormData, end_time: e.target.value })} 
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="start_time">Start Time</Label>
-                      <Input id="start_time" type="time" value={eventFormData.start_time} onChange={(e) => setEventFormData({ ...eventFormData, start_time: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label htmlFor="end_time">End Time</Label>
-                      <Input id="end_time" type="time" value={eventFormData.end_time} onChange={(e) => setEventFormData({ ...eventFormData, end_time: e.target.value })} />
+
+                  {/* Location */}
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground mt-2" />
+                    <div className="flex-1">
+                      <Input 
+                        id="location" 
+                        value={eventFormData.location} 
+                        onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })} 
+                        placeholder="Add location"
+                        className="border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                      />
                     </div>
                   </div>
-                  <div>
-                    <Label htmlFor="location">Location</Label>
-                    <Input id="location" value={eventFormData.location} onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })} placeholder="e.g., Ohio Stadium" />
+
+                  {/* Description */}
+                  <div className="flex items-start gap-3">
+                    <Type className="h-5 w-5 text-muted-foreground mt-2" />
+                    <div className="flex-1">
+                      <Textarea 
+                        id="description" 
+                        value={eventFormData.description} 
+                        onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })} 
+                        placeholder="Add description"
+                        rows={4}
+                        className="resize-none"
+                      />
+                    </div>
                   </div>
-                  <Button type="submit" className="w-full">{editingEvent ? "Update" : "Create"} Event</Button>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end gap-3 pt-4 border-t">
+                    <Button type="button" variant="outline" onClick={() => setEventDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">
+                      {editingEvent ? "Update" : "Create"} Event
+                    </Button>
+                  </div>
                 </form>
               </DialogContent>
             </Dialog>
@@ -506,35 +635,136 @@ export default function Admin() {
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>{editingLeadership ? "Edit Member" : "Add Member"}</DialogTitle>
-                  <DialogDescription>Fill in the member details below.</DialogDescription>
+                  <DialogTitle className="text-2xl font-semibold">{editingLeadership ? "Edit Member" : "Add Member"}</DialogTitle>
+                  <DialogDescription>Add leadership team member information</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleLeadershipSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Name *</Label>
-                    <Input id="name" value={leadershipFormData.name} onChange={(e) => setLeadershipFormData({ ...leadershipFormData, name: e.target.value })} required />
+                <form onSubmit={handleLeadershipSubmit} className="space-y-6">
+                  {/* Profile Photo Upload */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Profile Photo</Label>
+                    <div className="flex items-center gap-4">
+                      {uploadPreview || leadershipFormData.image_url ? (
+                        <div className="relative">
+                          <img 
+                            src={uploadPreview || leadershipFormData.image_url} 
+                            alt="Preview" 
+                            className="w-24 h-24 rounded-full object-cover border-2 border-border"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                            onClick={() => {
+                              setUploadedFile(null);
+                              setUploadPreview("");
+                              setLeadershipFormData({ ...leadershipFormData, image_url: "" });
+                            }}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-accent flex items-center justify-center">
+                          <Upload className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setUploadedFile(file);
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setUploadPreview(reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Upload a professional headshot (JPG, PNG)
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="position">Position *</Label>
-                    <Input id="position" value={leadershipFormData.position} onChange={(e) => setLeadershipFormData({ ...leadershipFormData, position: e.target.value })} required />
+
+                  {/* Name and Position */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name *</Label>
+                      <Input 
+                        id="name" 
+                        value={leadershipFormData.name} 
+                        onChange={(e) => setLeadershipFormData({ ...leadershipFormData, name: e.target.value })} 
+                        placeholder="John Doe"
+                        required 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="position">Position *</Label>
+                      <Input 
+                        id="position" 
+                        value={leadershipFormData.position} 
+                        onChange={(e) => setLeadershipFormData({ ...leadershipFormData, position: e.target.value })} 
+                        placeholder="President"
+                        required 
+                      />
+                    </div>
                   </div>
-                  <div>
+
+                  {/* Bio */}
+                  <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
-                    <Textarea id="bio" value={leadershipFormData.bio} onChange={(e) => setLeadershipFormData({ ...leadershipFormData, bio: e.target.value })} rows={3} />
+                    <Textarea 
+                      id="bio" 
+                      value={leadershipFormData.bio} 
+                      onChange={(e) => setLeadershipFormData({ ...leadershipFormData, bio: e.target.value })} 
+                      placeholder="Brief biography and background..."
+                      rows={4}
+                      className="resize-none"
+                    />
                   </div>
-                  <div>
-                    <Label htmlFor="quote">Quote</Label>
-                    <Textarea id="quote" value={leadershipFormData.quote} onChange={(e) => setLeadershipFormData({ ...leadershipFormData, quote: e.target.value })} rows={2} />
+
+                  {/* Quote */}
+                  <div className="space-y-2">
+                    <Label htmlFor="quote">Personal Quote</Label>
+                    <Textarea 
+                      id="quote" 
+                      value={leadershipFormData.quote} 
+                      onChange={(e) => setLeadershipFormData({ ...leadershipFormData, quote: e.target.value })} 
+                      placeholder="Inspirational quote or message..."
+                      rows={2}
+                      className="resize-none"
+                    />
                   </div>
-                  <div>
-                    <Label htmlFor="image_url">Image URL</Label>
-                    <Input id="image_url" type="url" value={leadershipFormData.image_url} onChange={(e) => setLeadershipFormData({ ...leadershipFormData, image_url: e.target.value })} placeholder="https://example.com/image.jpg" />
-                  </div>
-                  <div>
+
+                  {/* Display Order */}
+                  <div className="space-y-2">
                     <Label htmlFor="display_order">Display Order</Label>
-                    <Input id="display_order" type="number" value={leadershipFormData.display_order} onChange={(e) => setLeadershipFormData({ ...leadershipFormData, display_order: parseInt(e.target.value) })} />
+                    <Input 
+                      id="display_order" 
+                      type="number" 
+                      value={leadershipFormData.display_order} 
+                      onChange={(e) => setLeadershipFormData({ ...leadershipFormData, display_order: parseInt(e.target.value) || 0 })}
+                      placeholder="0"
+                    />
+                    <p className="text-xs text-muted-foreground">Lower numbers appear first</p>
                   </div>
-                  <Button type="submit" className="w-full">{editingLeadership ? "Update" : "Add"} Member</Button>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end gap-3 pt-4 border-t">
+                    <Button type="button" variant="outline" onClick={() => setLeadershipDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">
+                      {editingLeadership ? "Update" : "Add"} Member
+                    </Button>
+                  </div>
                 </form>
               </DialogContent>
             </Dialog>
