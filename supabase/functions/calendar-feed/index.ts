@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Content-Type': 'text/calendar; charset=utf-8',
   'Content-Disposition': 'inline; filename="special-olympics-calendar.ics"',
+  'Cache-Control': 'no-cache, no-store, must-revalidate',
+  'Pragma': 'no-cache',
+  'Expires': '0',
 };
 
 function formatICalDate(date: string, time?: string): string {
@@ -56,21 +59,44 @@ serve(async (req) => {
     ];
 
     for (const event of events || []) {
-      const dtstart = formatICalDate(event.event_date, event.start_time);
-      const dtend = event.end_time 
-        ? formatICalDate(event.event_date, event.end_time)
-        : formatICalDate(event.event_date, event.start_time);
-      
       const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      
+
       icalContent.push(
         'BEGIN:VEVENT',
         `UID:${event.id}@specialolympics.com`,
         `DTSTAMP:${now}`,
-        `DTSTART:${dtstart}`,
-        `DTEND:${dtend}`,
         `SUMMARY:${escapeICalText(event.title)}`,
       );
+
+      // All-day event (no start_time)
+      if (!event.start_time) {
+        const startDateOnly = event.event_date.split('-').join('');
+        const d = new Date(event.event_date + 'T00:00:00Z');
+        d.setUTCDate(d.getUTCDate() + 1);
+        const endDateOnly = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`;
+
+        icalContent.push(
+          `DTSTART;VALUE=DATE:${startDateOnly}`,
+          `DTEND;VALUE=DATE:${endDateOnly}`,
+        );
+      } else {
+        // Timed event
+        const dtstart = formatICalDate(event.event_date, event.start_time);
+        let dtend: string;
+        if (event.end_time) {
+          dtend = formatICalDate(event.event_date, event.end_time);
+        } else {
+          const d = new Date(event.event_date);
+          const [h, m] = event.start_time.split(':');
+          d.setHours(parseInt(h), parseInt(m), 0);
+          d.setMinutes(d.getMinutes() + 60); // default to 1 hour duration if no end_time
+          dtend = d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        }
+        icalContent.push(
+          `DTSTART:${dtstart}`,
+          `DTEND:${dtend}`,
+        );
+      }
 
       if (event.description) {
         icalContent.push(`DESCRIPTION:${escapeICalText(event.description)}`);

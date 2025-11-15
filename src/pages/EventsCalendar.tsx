@@ -117,7 +117,7 @@ const EventsCalendar = () => {
     
     switch (type) {
       case 'google':
-        window.open(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`, '_blank');
+        window.open(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(httpsUrl)}`, '_blank');
         break;
       case 'apple':
         window.location.href = webcalUrl;
