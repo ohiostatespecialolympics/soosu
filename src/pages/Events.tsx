@@ -81,17 +81,18 @@ const Events = () => {
   };
 
   const handleSubscribeCalendar = (type: 'google' | 'apple' | 'outlook') => {
-    const feedUrl = getCalendarFeedUrl();
+    const webcalUrl = 'webcal://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed';
+    const httpsUrl = getCalendarFeedUrl();
     
     switch (type) {
       case 'google':
-        window.open(`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(feedUrl)}`, '_blank');
+        window.open(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`, '_blank');
         break;
       case 'apple':
-        window.location.href = `webcal://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed`;
+        window.location.href = webcalUrl;
         break;
       case 'outlook':
-        window.open(`https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(feedUrl)}&name=${encodeURIComponent('Special Olympics Events')}`, '_blank');
+        window.open(`https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(httpsUrl)}&name=${encodeURIComponent('Special Olympics Events')}`, '_blank');
         break;
     }
   };
