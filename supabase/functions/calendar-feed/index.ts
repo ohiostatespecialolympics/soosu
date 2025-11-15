@@ -51,6 +51,8 @@ serve(async (req) => {
       'X-WR-CALNAME:Special Olympics Events',
       'X-WR-TIMEZONE:America/New_York',
       'X-WR-CALDESC:Special Olympics Events and Activities',
+      'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
+      'X-PUBLISHED-TTL:PT1H',
     ];
 
     for (const event of events || []) {
