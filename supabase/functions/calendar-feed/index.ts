@@ -56,6 +56,23 @@ serve(async (req) => {
       'X-WR-CALDESC:Special Olympics Events and Activities',
       'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
       'X-PUBLISHED-TTL:PT1H',
+      'BEGIN:VTIMEZONE',
+      'TZID:America/New_York',
+      'BEGIN:DAYLIGHT',
+      'TZOFFSETFROM:-0500',
+      'TZOFFSETTO:-0400',
+      'TZNAME:EDT',
+      'DTSTART:19700308T020000',
+      'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU',
+      'END:DAYLIGHT',
+      'BEGIN:STANDARD',
+      'TZOFFSETFROM:-0400',
+      'TZOFFSETTO:-0500',
+      'TZNAME:EST',
+      'DTSTART:19701101T020000',
+      'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
+      'END:STANDARD',
+      'END:VTIMEZONE',
     ];
 
     for (const event of events || []) {
@@ -80,21 +97,22 @@ serve(async (req) => {
           `DTEND;VALUE=DATE:${endDateOnly}`,
         );
       } else {
-        // Timed event
-        const dtstart = formatICalDate(event.event_date, event.start_time);
-        let dtend: string;
+        // Timed event with timezone
+        const startDate = new Date(event.event_date + 'T' + event.start_time);
+        const startFormatted = `${startDate.getFullYear()}${String(startDate.getMonth() + 1).padStart(2, '0')}${String(startDate.getDate()).padStart(2, '0')}T${String(startDate.getHours()).padStart(2, '0')}${String(startDate.getMinutes()).padStart(2, '0')}00`;
+        
+        let endFormatted: string;
         if (event.end_time) {
-          dtend = formatICalDate(event.event_date, event.end_time);
+          const endDate = new Date(event.event_date + 'T' + event.end_time);
+          endFormatted = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}T${String(endDate.getHours()).padStart(2, '0')}${String(endDate.getMinutes()).padStart(2, '0')}00`;
         } else {
-          const d = new Date(event.event_date);
-          const [h, m] = event.start_time.split(':');
-          d.setHours(parseInt(h), parseInt(m), 0);
-          d.setMinutes(d.getMinutes() + 60); // default to 1 hour duration if no end_time
-          dtend = d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+          const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour default
+          endFormatted = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}T${String(endDate.getHours()).padStart(2, '0')}${String(endDate.getMinutes()).padStart(2, '0')}00`;
         }
+        
         icalContent.push(
-          `DTSTART:${dtstart}`,
-          `DTEND:${dtend}`,
+          `DTSTART;TZID=America/New_York:${startFormatted}`,
+          `DTEND;TZID=America/New_York:${endFormatted}`,
         );
       }
 
