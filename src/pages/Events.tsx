@@ -80,20 +80,108 @@ const Events = () => {
     return 'https://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed';
   };
 
+  const createEventICS = (event: Event) => {
+    const escapeICalText = (text: string) => text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    
+    let icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Special Olympics//Event//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VTIMEZONE',
+      'TZID:America/New_York',
+      'BEGIN:DAYLIGHT',
+      'TZOFFSETFROM:-0500',
+      'TZOFFSETTO:-0400',
+      'TZNAME:EDT',
+      'DTSTART:19700308T020000',
+      'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU',
+      'END:DAYLIGHT',
+      'BEGIN:STANDARD',
+      'TZOFFSETFROM:-0400',
+      'TZOFFSETTO:-0500',
+      'TZNAME:EST',
+      'DTSTART:19701101T020000',
+      'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
+      'END:STANDARD',
+      'END:VTIMEZONE',
+      'BEGIN:VEVENT',
+      `UID:${event.id}@specialolympics.com`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+      `SUMMARY:${escapeICalText(event.title)}`,
+    ];
+
+    if (!event.start_time) {
+      const startDateOnly = event.event_date.split('-').join('');
+      const d = new Date(event.event_date + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() + 1);
+      const endDateOnly = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`;
+      icsContent.push(
+        `DTSTART;VALUE=DATE:${startDateOnly}`,
+        `DTEND;VALUE=DATE:${endDateOnly}`,
+      );
+    } else {
+      const startDate = new Date(event.event_date + 'T' + event.start_time);
+      const startFormatted = `${startDate.getFullYear()}${String(startDate.getMonth() + 1).padStart(2, '0')}${String(startDate.getDate()).padStart(2, '0')}T${String(startDate.getHours()).padStart(2, '0')}${String(startDate.getMinutes()).padStart(2, '0')}00`;
+      
+      let endFormatted: string;
+      if (event.end_time) {
+        const endDate = new Date(event.event_date + 'T' + event.end_time);
+        endFormatted = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}T${String(endDate.getHours()).padStart(2, '0')}${String(endDate.getMinutes()).padStart(2, '0')}00`;
+      } else {
+        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+        endFormatted = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}T${String(endDate.getHours()).padStart(2, '0')}${String(endDate.getMinutes()).padStart(2, '0')}00`;
+      }
+      
+      icsContent.push(
+        `DTSTART;TZID=America/New_York:${startFormatted}`,
+        `DTEND;TZID=America/New_York:${endFormatted}`,
+      );
+    }
+
+    if (event.description) icsContent.push(`DESCRIPTION:${escapeICalText(event.description)}`);
+    if (event.location) icsContent.push(`LOCATION:${escapeICalText(event.location)}`);
+    if (event.event_type) icsContent.push(`CATEGORIES:${escapeICalText(event.event_type)}`);
+
+    icsContent.push('END:VEVENT', 'END:VCALENDAR');
+    return icsContent.join('\r\n');
+  };
+
+  const handleAddEventToCalendar = (event: Event, type: 'google' | 'apple' | 'outlook') => {
+    if (type === 'google') {
+      const startDate = event.start_time 
+        ? `${event.event_date}T${event.start_time}:00`
+        : event.event_date;
+      const endDate = event.end_time 
+        ? `${event.event_date}T${event.end_time}:00`
+        : event.event_date;
+      const googleUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startDate.replace(/[-:]/g, '')}/${endDate.replace(/[-:]/g, '')}&details=${encodeURIComponent(event.description || '')}&location=${encodeURIComponent(event.location || '')}`;
+      window.open(googleUrl, '_blank');
+    } else {
+      const icsContent = createEventICS(event);
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${event.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const handleSubscribeCalendar = (type: 'google' | 'apple' | 'outlook') => {
     const webcalUrl = 'webcal://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed';
     const httpsUrl = getCalendarFeedUrl();
     
-    switch (type) {
-      case 'google':
-        window.open(`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(httpsUrl)}`, '_blank');
-        break;
-      case 'apple':
-        window.location.href = webcalUrl;
-        break;
-      case 'outlook':
-        window.open(`https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(httpsUrl)}&name=${encodeURIComponent('Special Olympics Events')}`, '_blank');
-        break;
+    if (type === 'google') {
+      window.open(`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(httpsUrl)}`, '_blank');
+    } else if (type === 'apple') {
+      window.location.href = webcalUrl;
+    } else {
+      window.open(`https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(httpsUrl)}&name=${encodeURIComponent('Special Olympics Events')}`, '_blank');
     }
   };
 
@@ -492,9 +580,30 @@ const Events = () => {
                     <Button className="font-montserrat font-semibold flex-1">
                       Sign Up to Volunteer
                     </Button>
-                    <Button variant="outline" className="font-montserrat flex-1">
-                      Add to Calendar
-                    </Button>
+                    {selectedEvent && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="font-montserrat flex-1">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            Add to Calendar
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleAddEventToCalendar(selectedEvent, 'google')}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            Google Calendar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAddEventToCalendar(selectedEvent, 'apple')}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            Apple Calendar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleAddEventToCalendar(selectedEvent, 'outlook')}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            Outlook Calendar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               </DialogContent>
