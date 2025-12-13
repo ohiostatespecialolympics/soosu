@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, Plus, Download, Calendar as CalendarIcon } from "lucide-react";
+import { Search, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -31,6 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import CalendarSubscriptionDialog from "@/components/CalendarSubscriptionDialog";
 
 const eventStatuses: Status[] = [
   { id: "sports", name: "Sports", color: "#3B82F6" },
@@ -56,6 +57,7 @@ const EventsCalendar = () => {
   const [selectedEvent, setSelectedEvent] = useState<Feature | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subscribeDialogOpen, setSubscribeDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -106,10 +108,6 @@ const EventsCalendar = () => {
   const latestYear = events.length > 0
     ? Math.max(...events.map((e) => new Date(e.event_date).getFullYear()))
     : new Date().getFullYear() + 1;
-
-  const getCalendarFeedUrl = () => {
-    return 'https://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed';
-  };
 
   const getEventById = (featureId: string): Event | undefined => {
     return events.find(e => e.id === featureId);
@@ -207,24 +205,6 @@ const EventsCalendar = () => {
     }
   };
 
-  const handleSubscribeCalendar = (type: 'google' | 'apple' | 'outlook') => {
-    const webcalUrl = 'webcal://rkhnnzqwigqvlmyxaqpl.supabase.co/functions/v1/calendar-feed';
-    const httpsUrl = getCalendarFeedUrl();
-    
-    if (type === 'google') {
-      window.open(`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(httpsUrl)}`, '_blank');
-    } else if (type === 'apple') {
-      window.location.href = webcalUrl;
-    } else {
-      window.open(`https://outlook.live.com/calendar/0/addcalendar?url=${encodeURIComponent(httpsUrl)}&name=${encodeURIComponent('Special Olympics Events')}`, '_blank');
-    }
-  };
-
-  const handleDownloadCalendar = () => {
-    const feedUrl = getCalendarFeedUrl();
-    window.open(feedUrl, '_blank');
-  };
-
   const getCategoryBadge = (categoryId: string) => {
     const colors = {
       sports: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
@@ -266,32 +246,14 @@ const EventsCalendar = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 justify-center items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2 font-montserrat">
-                  <Plus className="h-4 w-4" />
-                  Subscribe to Calendar
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => handleSubscribeCalendar('google')}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  Add to Google Calendar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSubscribeCalendar('apple')}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  Add to Apple Calendar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleSubscribeCalendar('outlook')}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  Add to Outlook Calendar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDownloadCalendar}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Calendar File
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button 
+              variant="outline" 
+              className="gap-2 font-montserrat"
+              onClick={() => setSubscribeDialogOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Subscribe to Calendar
+            </Button>
             <Button
               variant={filter === "all" ? "default" : "outline"}
               onClick={() => setFilter("all")}
@@ -401,6 +363,11 @@ const EventsCalendar = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        <CalendarSubscriptionDialog 
+          open={subscribeDialogOpen} 
+          onOpenChange={setSubscribeDialogOpen} 
+        />
       </div>
     </div>
   );
