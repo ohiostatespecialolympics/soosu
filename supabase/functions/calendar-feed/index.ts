@@ -11,13 +11,12 @@ const corsHeaders = {
   'Expires': '0',
 };
 
-function formatICalDate(date: string, time?: string): string {
-  const d = new Date(date);
-  if (time) {
-    const [hours, minutes] = time.split(':');
-    d.setHours(parseInt(hours), parseInt(minutes), 0);
+function formatICalDate(dateStr: string, timeStr?: string): string {
+  if (!timeStr) {
+    return dateStr.replace(/-/g, '');
   }
-  return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const d = new Date(`${dateStr}T${timeStr}`);
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}00`;
 }
 
 function escapeICalText(text: string): string {
@@ -27,7 +26,20 @@ function escapeICalText(text: string): string {
     .replace(/\n/g, '\\n');
 }
 
+function formatICalTimestamp(date: Date): string {
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+function calculateSequence(updatedAt: string | null): number {
+  if (!updatedAt) return 0;
+  const updated = new Date(updatedAt);
+  const epoch = new Date('2024-01-01').getTime();
+  return Math.floor((updated.getTime() - epoch) / 1000);
+}
+
 serve(async (req) => {
+  console.log('Calendar feed request received');
+  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -43,7 +55,15 @@ serve(async (req) => {
       .select('*')
       .order('event_date', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
+
+    console.log(`Found ${events?.length || 0} events`);
+
+    const now = new Date();
+    const nowFormatted = formatICalTimestamp(now);
 
     let icalContent = [
       'BEGIN:VCALENDAR',
@@ -54,8 +74,8 @@ serve(async (req) => {
       'X-WR-CALNAME:Special Olympics Events',
       'X-WR-TIMEZONE:America/New_York',
       'X-WR-CALDESC:Special Olympics Events and Activities',
-      'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
-      'X-PUBLISHED-TTL:PT1H',
+      'REFRESH-INTERVAL;VALUE=DURATION:PT30M',
+      'X-PUBLISHED-TTL:PT30M',
       'BEGIN:VTIMEZONE',
       'TZID:America/New_York',
       'BEGIN:DAYLIGHT',
@@ -76,18 +96,23 @@ serve(async (req) => {
     ];
 
     for (const event of events || []) {
-      const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const sequence = calculateSequence(event.updated_at);
+      const lastModified = event.updated_at 
+        ? formatICalTimestamp(new Date(event.updated_at))
+        : nowFormatted;
 
       icalContent.push(
         'BEGIN:VEVENT',
         `UID:${event.id}@specialolympics.com`,
-        `DTSTAMP:${now}`,
+        `DTSTAMP:${nowFormatted}`,
+        `SEQUENCE:${sequence}`,
+        `LAST-MODIFIED:${lastModified}`,
         `SUMMARY:${escapeICalText(event.title)}`,
       );
 
       // All-day event (no start_time)
       if (!event.start_time) {
-        const startDateOnly = event.event_date.split('-').join('');
+        const startDateOnly = event.event_date.replace(/-/g, '');
         const d = new Date(event.event_date + 'T00:00:00Z');
         d.setUTCDate(d.getUTCDate() + 1);
         const endDateOnly = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`;
@@ -98,15 +123,14 @@ serve(async (req) => {
         );
       } else {
         // Timed event with timezone
-        const startDate = new Date(event.event_date + 'T' + event.start_time);
-        const startFormatted = `${startDate.getFullYear()}${String(startDate.getMonth() + 1).padStart(2, '0')}${String(startDate.getDate()).padStart(2, '0')}T${String(startDate.getHours()).padStart(2, '0')}${String(startDate.getMinutes()).padStart(2, '0')}00`;
+        const startFormatted = formatICalDate(event.event_date, event.start_time);
         
         let endFormatted: string;
         if (event.end_time) {
-          const endDate = new Date(event.event_date + 'T' + event.end_time);
-          endFormatted = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}T${String(endDate.getHours()).padStart(2, '0')}${String(endDate.getMinutes()).padStart(2, '0')}00`;
+          endFormatted = formatICalDate(event.event_date, event.end_time);
         } else {
-          const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour default
+          const startDate = new Date(event.event_date + 'T' + event.start_time);
+          const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
           endFormatted = `${endDate.getFullYear()}${String(endDate.getMonth() + 1).padStart(2, '0')}${String(endDate.getDate()).padStart(2, '0')}T${String(endDate.getHours()).padStart(2, '0')}${String(endDate.getMinutes()).padStart(2, '0')}00`;
         }
         
@@ -133,11 +157,14 @@ serve(async (req) => {
 
     icalContent.push('END:VCALENDAR');
 
+    console.log('Calendar feed generated successfully');
+
     return new Response(icalContent.join('\r\n'), {
       headers: corsHeaders,
       status: 200,
     });
   } catch (error) {
+    console.error('Error generating calendar feed:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
