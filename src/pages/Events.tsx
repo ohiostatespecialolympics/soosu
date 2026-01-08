@@ -189,11 +189,18 @@ const Events = () => {
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { 
+    // Parse as local time by appending T00:00:00 to avoid timezone shift
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     });
+  };
+  
+  // Helper to parse event date as local time
+  const parseEventDate = (dateStr: string) => {
+    return new Date(dateStr + 'T00:00:00');
   };
 
   const formatTime = (timeStr: string | null) => {
@@ -326,7 +333,7 @@ const Events = () => {
                     onSelect={setDate}
                     className="rounded-md border shadow-sm"
                     modifiers={{
-                      hasEvent: filteredEvents.map(e => new Date(e.event_date))
+                      hasEvent: filteredEvents.map(e => parseEventDate(e.event_date))
                     }}
                     modifiersStyles={{
                       hasEvent: {
@@ -343,7 +350,7 @@ const Events = () => {
                       Events on {formatDate(date.toISOString().split('T')[0])}
                     </h3>
                     {filteredEvents.filter(event => {
-                      const eventDate = new Date(event.event_date).toDateString();
+                      const eventDate = parseEventDate(event.event_date).toDateString();
                       return eventDate === date.toDateString();
                     }).length === 0 ? (
                       <Card>
@@ -353,7 +360,7 @@ const Events = () => {
                       </Card>
                     ) : (
                       filteredEvents.filter(event => {
-                        const eventDate = new Date(event.event_date).toDateString();
+                        const eventDate = parseEventDate(event.event_date).toDateString();
                         return eventDate === date.toDateString();
                       }).map((event) => (
                         <Card 

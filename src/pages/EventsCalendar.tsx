@@ -85,13 +85,18 @@ const EventsCalendar = () => {
     setLoading(false);
   };
 
+  // Helper to parse event date as local time (avoids timezone shift)
+  const parseEventDate = (dateStr: string) => {
+    return new Date(dateStr + 'T00:00:00');
+  };
+
   const eventsData: Feature[] = events.map((event) => {
     const status = eventStatuses.find(s => s.id === event.event_type) || eventStatuses[3];
     return {
       id: event.id,
       name: event.title,
-      startAt: new Date(event.event_date),
-      endAt: new Date(event.event_date),
+      startAt: parseEventDate(event.event_date),
+      endAt: parseEventDate(event.event_date),
       status,
     };
   });
@@ -103,10 +108,10 @@ const EventsCalendar = () => {
   });
 
   const earliestYear = events.length > 0 
-    ? Math.min(...events.map((e) => new Date(e.event_date).getFullYear()))
+    ? Math.min(...events.map((e) => parseEventDate(e.event_date).getFullYear()))
     : new Date().getFullYear();
   const latestYear = events.length > 0
-    ? Math.max(...events.map((e) => new Date(e.event_date).getFullYear()))
+    ? Math.max(...events.map((e) => parseEventDate(e.event_date).getFullYear()))
     : new Date().getFullYear() + 1;
 
   const getEventById = (featureId: string): Event | undefined => {
