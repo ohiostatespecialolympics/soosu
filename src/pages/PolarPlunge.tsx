@@ -4,7 +4,7 @@ import { Trophy, Heart, Users, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const PolarPlunge = () => {
-  const targetDate = new Date("2026-10-27T08:00:00");
+  const targetDate = new Date("2026-10-27T07:00:00");
   const [timeRemaining, setTimeRemaining] = useState({
     days: 0,
     hours: 0,
@@ -119,8 +119,8 @@ const PolarPlunge = () => {
                 <CardTitle className="font-oswald">When</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-montserrat">October 28, 2025</p>
-                <p className="font-montserrat">8:00 AM - 12:00 PM</p>
+                <p className="font-montserrat">October 27, 2026</p>
+                <p className="font-montserrat">7:00 PM - 8:30 PM</p>
               </CardContent>
             </Card>
 
