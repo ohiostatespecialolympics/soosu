@@ -141,9 +141,9 @@ const Combobox = ({
               {data.map((item) => (
                 <CommandItem
                   key={item.value}
-                  value={item.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? '' : currentValue);
+                  value={item.label}
+                  onSelect={() => {
+                    setValue(item.value);
                     setOpen(false);
                   }}
                   className="capitalize"
