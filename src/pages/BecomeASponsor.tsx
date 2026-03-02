@@ -45,7 +45,7 @@ const BecomeASponsor = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Team-branded apparel or gear featuring your company logo</span>
+                    <span>Team-branded apparel featuring your company logo</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
