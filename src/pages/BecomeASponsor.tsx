@@ -49,7 +49,7 @@ const BecomeASponsor = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Custom volunteer event planned specifically for your company (e.g., Unified Field Day, team-building competition, or service event with athletes)</span>
+                    <span>Custom volunteer event planned for your company (e.g., Unified Field Day, team-building competition, or service event with athletes)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
