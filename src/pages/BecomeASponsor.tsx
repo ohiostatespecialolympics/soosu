@@ -148,9 +148,13 @@ const BecomeASponsor = () => {
                     size="lg" 
                     variant="outline"
                     className="font-montserrat bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
-                  >
-                    <a href="mailto:specialolympics@osu.edu">Email Us Directly</a>
-                  </Button>
+                  <a 
+    href="/SOOSU_Sponsorship_Packet.pdf" 
+    download
+  >
+    Download Sponsorship Packet
+  </a>
+</Button>
                 </div>
               </div>
             </CardContent>
@@ -168,7 +172,7 @@ const BecomeASponsor = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Community Impact</h4>
                   <p className="text-sm text-muted-foreground">
-                    Your sponsorship directly funds events, equipment, and programs that serve 200+ athletes annually.
+                    Your sponsorship directly funds events, equipment, and programs that serve 300+ athletes annually.
                   </p>
                 </div>
                 <div>
@@ -180,7 +184,7 @@ const BecomeASponsor = () => {
                 <div>
                   <h4 className="font-semibold mb-2">Tax Deductible</h4>
                   <p className="text-sm text-muted-foreground">
-                    All sponsorships are tax-deductible as we are a registered 501(c)(3) organization.
+                    All donations are tax-deductible through The Ohio State University Foundation, a 501(c)(3) organization.
                   </p>
                 </div>
                 <div>
