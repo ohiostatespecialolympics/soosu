@@ -12,7 +12,7 @@ const Home = () => {
         <div className="absolute inset-0 overflow-hidden opacity-[0.02]">
           <div className="absolute inset-0" style={{
             backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--foreground)) 1px, transparent 0)`,
-            backgroundSize: '48px 48px',
+            backgroundSize: '48px 48px'
           }}></div>
         </div>
 
@@ -53,20 +53,20 @@ const Home = () => {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                 <Link to="/get-involved">
-                  <Button 
-                    size="lg" 
-                    className="font-montserrat font-semibold text-lg px-10 py-7 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  >
+                  <Button
+                    size="lg"
+                    className="font-montserrat font-semibold text-lg px-10 py-7 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+
                     Get Involved
                     <Heart className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
                 <Link to="/events">
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     variant="outline"
-                    className="font-montserrat font-semibold text-lg px-10 py-7 border-2 transition-all duration-300 hover:scale-105"
-                  >
+                    className="font-montserrat font-semibold text-lg px-10 py-7 border-2 transition-all duration-300 hover:scale-105">
+
                     <Calendar className="mr-2 h-5 w-5" />
                     View Events
                   </Button>
@@ -76,16 +76,16 @@ const Home = () => {
               {/* Impact Stats */}
               <div className="grid grid-cols-3 gap-8 pt-16 max-w-4xl mx-auto">
                 <div className="space-y-2 group">
-                  <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">
-                    200+
+                  <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">150+
+
                   </div>
                   <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
                     Volunteers
                   </div>
                 </div>
                 <div className="space-y-2 group">
-                  <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">
-                    500+
+                  <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">300+
+
                   </div>
                   <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
                     Athletes
@@ -180,8 +180,8 @@ const Home = () => {
           </Link>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Home;
