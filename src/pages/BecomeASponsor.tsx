@@ -107,7 +107,7 @@ const BecomeASponsor = () => {
                 <ul className="space-y-3 font-montserrat text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Directly fund one Special Olympics athlete for the full season</span>
+                    <span>Sponsor one Special Olympics athlete for the full season</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
