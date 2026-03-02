@@ -41,27 +41,23 @@ const BecomeASponsor = () => {
                 <ul className="space-y-3 font-montserrat text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Prominent logo on all event materials and merchandise</span>
+                    <span>Everything in Silver plus:</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Featured placement on website homepage</span>
+                    <span>Team-branded apparel or gear featuring your company logo</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Monthly social media recognition</span>
+                    <span>Custom volunteer event planned specifically for your company (e.g., Unified Field Day, team-building competition, or service event with athletes)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Speaking opportunity at Polar Plunge</span>
+                    <span>Company logo featured on all event banners for the year (Polar Plunge, Unified Tournaments, OSUxComets Games)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Exclusive volunteer team invitation</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">✓</span>
-                    <span>Quarterly impact reports</span>
+                    <span>Company-branded products distributed at high-exposure events</span>
                   </li>
                 </ul>
               </CardContent>
@@ -80,19 +76,19 @@ const BecomeASponsor = () => {
                 <ul className="space-y-3 font-montserrat text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Logo on event materials and website</span>
+                    <span>Everything in Bronze plus:</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Social media shout-outs</span>
+                    <span>Sponsor one full sport team for the season (Basketball, Swim, Bowling, etc.)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Volunteer team invitation</span>
+                    <span>Company logo on event flyers and digital marketing</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Semi-annual impact reports</span>
+                    <span>Invitation for company to volunteer at competitions and connect with sponsored team</span>
                   </li>
                 </ul>
               </CardContent>
@@ -111,19 +107,15 @@ const BecomeASponsor = () => {
                 <ul className="space-y-3 font-montserrat text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Logo on website sponsors page</span>
+                    <span>Directly fund one Special Olympics athlete for the full season</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Social media recognition</span>
+                    <span>Company welcome to attend any OSU Special Olympics competition or fundraising event</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Event program listing</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary font-bold">✓</span>
-                    <span>Annual impact report</span>
+                    <span>Company logo featured on the OSU Special Olympics website and club apparel</span>
                   </li>
                 </ul>
               </CardContent>
