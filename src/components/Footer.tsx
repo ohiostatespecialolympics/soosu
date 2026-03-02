@@ -80,9 +80,20 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-background/20 mt-8 pt-6 text-center">
+        <div className="border-t border-background/20 mt-8 pt-6 text-center space-y-2">
           <p className="font-montserrat text-sm text-background/80">
             © {new Date().getFullYear()} Special Olympics at The Ohio State University. All rights reserved.
+          </p>
+          <p className="font-montserrat text-xs text-background/50">
+            Part of{" "}
+            <a
+              href="https://www.specialolympics.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-background/80 underline underline-offset-2 transition-colors"
+            >
+              Special Olympics International
+            </a>
           </p>
         </div>
       </div>
