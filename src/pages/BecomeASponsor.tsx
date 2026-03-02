@@ -148,8 +148,9 @@ const BecomeASponsor = () => {
                     size="lg" 
                     variant="outline"
                     className="font-montserrat bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+                  >
                   <a 
-    href="/SOOSU_Sponsorship_Packet.pdf" 
+                     href="/SOOSU_Sponsorship_Packet.pdf" 
     download
   >
     Download Sponsorship Packet
