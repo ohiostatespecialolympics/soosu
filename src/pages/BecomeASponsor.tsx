@@ -111,7 +111,7 @@ const BecomeASponsor = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Company welcome to attend any OSU Special Olympics competition or fundraising event</span>
+                    <span>Invitation to attend any OSU Special Olympics competition or fundraising event</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
