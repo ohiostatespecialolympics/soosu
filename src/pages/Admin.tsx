@@ -5,14 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Type, Upload, X, Repeat, CalendarPlus } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Upload,
+  X, Repeat, CalendarPlus, LayoutDashboard, Users, Trophy, Star, ChevronRight,
+  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { addDays, addWeeks, addMonths, format, parseISO } from "date-fns";
 
 interface Event {
@@ -45,445 +49,283 @@ interface Sponsor {
   display_order: number;
 }
 
+interface UserWithRole {
+  id: string;
+  email: string;
+  created_at: string;
+  role: string | null;
+}
+
+type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users";
+
+const NAV = [
+  { id: "dashboard" as Section, label: "Dashboard", icon: LayoutDashboard },
+  { id: "events" as Section, label: "Events", icon: Calendar },
+  { id: "leadership" as Section, label: "Leadership", icon: Users },
+  { id: "sponsors" as Section, label: "Sponsorships", icon: Star },
+  { id: "users" as Section, label: "Users", icon: Shield },
+];
+
+const TIER_COLORS: Record<string, string> = {
+  platinum: "bg-slate-200 text-slate-800",
+  gold: "bg-yellow-100 text-yellow-800",
+  silver: "bg-gray-100 text-gray-700",
+  bronze: "bg-orange-100 text-orange-800",
+};
+
+const EVENT_TYPES = ["Fundraiser", "Community Event", "Sports Event", "Meeting", "Workshop", "Other"];
+
 export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+  const [activeSection, setActiveSection] = useState<Section>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Data
   const [events, setEvents] = useState<Event[]>([]);
   const [leadershipMembers, setLeadershipMembers] = useState<LeadershipMember[]>([]);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  
+  const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
+  // Dialogs
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [leadershipDialogOpen, setLeadershipDialogOpen] = useState(false);
   const [sponsorDialogOpen, setSponsorDialogOpen] = useState(false);
-  
+
+  // Editing state
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [editingLeadership, setEditingLeadership] = useState<LeadershipMember | null>(null);
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
-  
-  const [eventFormData, setEventFormData] = useState({
-    title: "",
-    description: "",
-    event_date: "",
-    start_time: "",
-    end_time: "",
-    location: "",
-    event_type: "",
-  });
 
-  // Recurring event state
+  // Event form
+  const [eventFormData, setEventFormData] = useState({
+    title: "", description: "", event_date: "", start_time: "",
+    end_time: "", location: "", event_type: "",
+  });
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringFrequency, setRecurringFrequency] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [recurringEndDate, setRecurringEndDate] = useState("");
   const [recurringOccurrences, setRecurringOccurrences] = useState(5);
   const [recurringEndType, setRecurringEndType] = useState<"date" | "occurrences">("occurrences");
-
-  // Bulk event state
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [bulkDates, setBulkDates] = useState<string[]>([]);
   const [newBulkDate, setNewBulkDate] = useState("");
 
+  // Leadership form
   const [leadershipFormData, setLeadershipFormData] = useState({
-    name: "",
-    position: "",
-    bio: "",
-    quote: "",
-    image_url: "",
-    display_order: 0,
+    name: "", position: "", bio: "", quote: "", image_url: "", display_order: 0,
   });
-
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string>("");
 
+  // Sponsor form
   const [sponsorFormData, setSponsorFormData] = useState({
-    name: "",
-    logo_url: "",
-    website_url: "",
-    tier: "bronze",
-    display_order: 0,
+    name: "", logo_url: "", website_url: "", tier: "bronze", display_order: 0,
   });
 
   useEffect(() => {
     checkAuth();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-        checkAdminRole(session.user.id);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (!session) navigate("/auth");
+      else { setUser(session.user); checkAdminRole(session.user.id); }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
+    if (!session) { navigate("/auth"); return; }
     setUser(session.user);
     await checkAdminRole(session.user.id);
   };
 
   const checkAdminRole = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error checking admin role:", error);
-      toast({
-        title: "Error",
-        description: "Failed to verify admin access.",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    if (!data) {
-      toast({
-        title: "Access Denied",
-        description: "You need admin privileges to access this page.",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
+    const { data } = await supabase.from("user_roles").select("role")
+      .eq("user_id", userId).eq("role", "admin").maybeSingle();
+    if (!data) { setLoading(false); return; }
     setIsAdmin(true);
     setLoading(false);
+    fetchAll();
+  };
+
+  const fetchAll = () => {
     fetchEvents();
     fetchLeadershipMembers();
     fetchSponsors();
   };
 
   const fetchEvents = async () => {
-    const { data, error } = await supabase
-      .from("events")
-      .select("*")
-      .order("event_date", { ascending: true });
-
-    if (error) {
-      toast({ title: "Error", description: "Failed to load events.", variant: "destructive" });
-      return;
-    }
+    const { data } = await supabase.from("events").select("*").order("event_date", { ascending: true });
     setEvents(data || []);
   };
 
   const fetchLeadershipMembers = async () => {
-    const { data, error } = await supabase
-      .from("leadership_members")
-      .select("*")
-      .order("display_order", { ascending: true });
-
-    if (error) {
-      toast({ title: "Error", description: "Failed to load leadership members.", variant: "destructive" });
-      return;
-    }
+    const { data } = await supabase.from("leadership_members").select("*").order("display_order");
     setLeadershipMembers(data || []);
   };
 
   const fetchSponsors = async () => {
-    const { data, error } = await supabase
-      .from("sponsors")
-      .select("*")
-      .order("display_order", { ascending: true });
-
-    if (error) {
-      toast({ title: "Error", description: "Failed to load sponsors.", variant: "destructive" });
-      return;
-    }
+    const { data } = await supabase.from("sponsors").select("*").order("display_order");
     setSponsors(data || []);
   };
 
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      // Get all user roles
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+      const adminIds = new Set((roles || []).filter(r => r.role === "admin").map(r => r.user_id));
+
+      // Use the service role to get users list via the admin API (we use auth.users via a trick)
+      // We'll show the current user + any we can access via user_roles
+      const currentUserEntry: UserWithRole = {
+        id: user?.id || "",
+        email: user?.email || "",
+        created_at: user?.created_at || "",
+        role: adminIds.has(user?.id || "") ? "admin" : "user",
+      };
+
+      // Get all user IDs from roles table
+      const roleMap: Record<string, string> = {};
+      (roles || []).forEach(r => { roleMap[r.user_id] = r.role; });
+
+      // We can only show current user since we can't query auth.users from client
+      // Build a list from what we know
+      const knownUsers: UserWithRole[] = [currentUserEntry];
+      setUsers(knownUsers);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const grantAdminRole = async (userId: string) => {
+    const { error } = await supabase.from("user_roles").insert([{ user_id: userId, role: "admin" }]);
+    if (error) { toast({ title: "Error", description: "Failed to grant admin role.", variant: "destructive" }); return; }
+    toast({ title: "Admin role granted" });
+    fetchUsers();
+  };
+
+  const revokeAdminRole = async (userId: string) => {
+    if (userId === user?.id) { toast({ title: "Cannot revoke your own role", variant: "destructive" }); return; }
+    const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+    if (error) { toast({ title: "Error", description: "Failed to revoke role.", variant: "destructive" }); return; }
+    toast({ title: "Admin role revoked" });
+    fetchUsers();
+  };
+
+  // --- Event helpers ---
   const generateRecurringDates = (startDate: string): string[] => {
     const dates: string[] = [];
-    let currentDate = parseISO(startDate);
-    
+    let cur = parseISO(startDate);
     if (recurringEndType === "occurrences") {
       for (let i = 0; i < recurringOccurrences; i++) {
-        dates.push(format(currentDate, "yyyy-MM-dd"));
-        if (recurringFrequency === "daily") {
-          currentDate = addDays(currentDate, 1);
-        } else if (recurringFrequency === "weekly") {
-          currentDate = addWeeks(currentDate, 1);
-        } else if (recurringFrequency === "monthly") {
-          currentDate = addMonths(currentDate, 1);
-        }
+        dates.push(format(cur, "yyyy-MM-dd"));
+        cur = recurringFrequency === "daily" ? addDays(cur, 1) : recurringFrequency === "weekly" ? addWeeks(cur, 1) : addMonths(cur, 1);
       }
     } else {
-      const endDate = parseISO(recurringEndDate);
-      while (currentDate <= endDate) {
-        dates.push(format(currentDate, "yyyy-MM-dd"));
-        if (recurringFrequency === "daily") {
-          currentDate = addDays(currentDate, 1);
-        } else if (recurringFrequency === "weekly") {
-          currentDate = addWeeks(currentDate, 1);
-        } else if (recurringFrequency === "monthly") {
-          currentDate = addMonths(currentDate, 1);
-        }
+      const end = parseISO(recurringEndDate);
+      while (cur <= end) {
+        dates.push(format(cur, "yyyy-MM-dd"));
+        cur = recurringFrequency === "daily" ? addDays(cur, 1) : recurringFrequency === "weekly" ? addWeeks(cur, 1) : addMonths(cur, 1);
       }
     }
-    
     return dates;
   };
 
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (editingEvent) {
-      const { error } = await supabase
-        .from("events")
-        .update(eventFormData)
-        .eq("id", editingEvent.id);
-
-      if (error) {
-        toast({ title: "Error", description: "Failed to update event.", variant: "destructive" });
-        return;
-      }
-      toast({ title: "Success", description: "Event updated successfully." });
+      const { error } = await supabase.from("events").update(eventFormData).eq("id", editingEvent.id);
+      if (error) { toast({ title: "Error", description: "Failed to update event.", variant: "destructive" }); return; }
+      toast({ title: "Event updated" });
     } else {
-      // Determine which dates to create events for
-      let datesToCreate: string[] = [];
-      
-      if (isBulkMode && bulkDates.length > 0) {
-        datesToCreate = bulkDates;
-      } else if (isRecurring) {
-        datesToCreate = generateRecurringDates(eventFormData.event_date);
-      } else {
-        datesToCreate = [eventFormData.event_date];
-      }
-
-      // Create events for all dates
-      const eventsToInsert = datesToCreate.map(date => ({
-        ...eventFormData,
-        event_date: date,
-      }));
-
-      const { error } = await supabase
-        .from("events")
-        .insert(eventsToInsert);
-
-      if (error) {
-        toast({ title: "Error", description: "Failed to create event(s).", variant: "destructive" });
-        return;
-      }
-      
-      const eventCount = eventsToInsert.length;
-      toast({ 
-        title: "Success", 
-        description: `${eventCount} event${eventCount > 1 ? 's' : ''} created successfully.` 
-      });
+      const dates = isBulkMode && bulkDates.length > 0 ? bulkDates
+        : isRecurring ? generateRecurringDates(eventFormData.event_date)
+        : [eventFormData.event_date];
+      const { error } = await supabase.from("events").insert(dates.map(d => ({ ...eventFormData, event_date: d })));
+      if (error) { toast({ title: "Error", description: "Failed to create event(s).", variant: "destructive" }); return; }
+      toast({ title: `${dates.length} event${dates.length > 1 ? "s" : ""} created` });
     }
-
     resetEventForm();
     setEventDialogOpen(false);
     fetchEvents();
   };
 
   const handleFileUpload = async (file: File) => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('leadership-images')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('leadership-images')
-        .getPublicUrl(filePath);
-
-      return data.publicUrl;
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-      return null;
-    }
+    const ext = file.name.split(".").pop();
+    const path = `${Math.random()}.${ext}`;
+    const { error } = await supabase.storage.from("leadership-images").upload(path, file);
+    if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); return null; }
+    return supabase.storage.from("leadership-images").getPublicUrl(path).data.publicUrl;
   };
 
   const handleLeadershipSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    try {
-      let imageUrl = leadershipFormData.image_url;
-
-      // Upload file if a new one was selected
-      if (uploadedFile) {
-        const uploadedUrl = await handleFileUpload(uploadedFile);
-        if (!uploadedUrl) return;
-        imageUrl = uploadedUrl;
-      }
-
-      const dataToSubmit = {
-        ...leadershipFormData,
-        image_url: imageUrl
-      };
-
-      if (editingLeadership) {
-        const { error } = await supabase
-          .from("leadership_members")
-          .update(dataToSubmit)
-          .eq("id", editingLeadership.id);
-
-        if (error) {
-          toast({ title: "Error", description: "Failed to update member.", variant: "destructive" });
-          return;
-        }
-        toast({ title: "Success", description: "Leadership member updated successfully." });
-      } else {
-        const { error } = await supabase
-          .from("leadership_members")
-          .insert([dataToSubmit]);
-
-        if (error) {
-          toast({ title: "Error", description: "Failed to create member.", variant: "destructive" });
-          return;
-        }
-        toast({ title: "Success", description: "Leadership member created successfully." });
-      }
-
-      resetLeadershipForm();
-      setLeadershipDialogOpen(false);
-      fetchLeadershipMembers();
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    let imageUrl = leadershipFormData.image_url;
+    if (uploadedFile) {
+      const url = await handleFileUpload(uploadedFile);
+      if (!url) return;
+      imageUrl = url;
     }
+    const data = { ...leadershipFormData, image_url: imageUrl };
+    const { error } = editingLeadership
+      ? await supabase.from("leadership_members").update(data).eq("id", editingLeadership.id)
+      : await supabase.from("leadership_members").insert([data]);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: editingLeadership ? "Member updated" : "Member added" });
+    resetLeadershipForm();
+    setLeadershipDialogOpen(false);
+    fetchLeadershipMembers();
   };
 
   const handleSponsorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (editingSponsor) {
-      const { error } = await supabase
-        .from("sponsors")
-        .update(sponsorFormData)
-        .eq("id", editingSponsor.id);
-
-      if (error) {
-        toast({ title: "Error", description: "Failed to update sponsor.", variant: "destructive" });
-        return;
-      }
-      toast({ title: "Success", description: "Sponsor updated successfully." });
-    } else {
-      const { error } = await supabase
-        .from("sponsors")
-        .insert([sponsorFormData]);
-
-      if (error) {
-        toast({ title: "Error", description: "Failed to create sponsor.", variant: "destructive" });
-        return;
-      }
-      toast({ title: "Success", description: "Sponsor created successfully." });
-    }
-
+    const { error } = editingSponsor
+      ? await supabase.from("sponsors").update(sponsorFormData).eq("id", editingSponsor.id)
+      : await supabase.from("sponsors").insert([sponsorFormData]);
+    if (error) { toast({ title: "Error", description: "Failed to save sponsor.", variant: "destructive" }); return; }
+    toast({ title: editingSponsor ? "Sponsor updated" : "Sponsor added" });
     resetSponsorForm();
     setSponsorDialogOpen(false);
     fetchSponsors();
   };
 
-  const handleEventDelete = async (id: string) => {
+  const deleteEvent = async (id: string) => {
     if (!confirm("Delete this event?")) return;
-    const { error } = await supabase.from("events").delete().eq("id", id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to delete event.", variant: "destructive" });
-      return;
-    }
-    toast({ title: "Success", description: "Event deleted successfully." });
+    await supabase.from("events").delete().eq("id", id);
+    toast({ title: "Event deleted" });
     fetchEvents();
   };
 
-  const handleLeadershipDelete = async (id: string) => {
-    if (!confirm("Delete this member?")) return;
-    const { error } = await supabase.from("leadership_members").delete().eq("id", id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to delete member.", variant: "destructive" });
-      return;
-    }
-    toast({ title: "Success", description: "Member deleted successfully." });
+  const deleteMember = async (id: string) => {
+    if (!confirm("Remove this member?")) return;
+    await supabase.from("leadership_members").delete().eq("id", id);
+    toast({ title: "Member removed" });
     fetchLeadershipMembers();
   };
 
-  const handleSponsorDelete = async (id: string) => {
-    if (!confirm("Delete this sponsor?")) return;
-    const { error } = await supabase.from("sponsors").delete().eq("id", id);
-    if (error) {
-      toast({ title: "Error", description: "Failed to delete sponsor.", variant: "destructive" });
-      return;
-    }
-    toast({ title: "Success", description: "Sponsor deleted successfully." });
+  const deleteSponsor = async (id: string) => {
+    if (!confirm("Remove this sponsor?")) return;
+    await supabase.from("sponsors").delete().eq("id", id);
+    toast({ title: "Sponsor removed" });
     fetchSponsors();
-  };
-
-  const handleEventEdit = (event: Event) => {
-    setEditingEvent(event);
-    setEventFormData({
-      title: event.title,
-      description: event.description || "",
-      event_date: event.event_date,
-      start_time: event.start_time || "",
-      end_time: event.end_time || "",
-      location: event.location || "",
-      event_type: event.event_type || "",
-    });
-    setEventDialogOpen(true);
-  };
-
-  const handleLeadershipEdit = (member: LeadershipMember) => {
-    setEditingLeadership(member);
-    setLeadershipFormData({
-      name: member.name,
-      position: member.position,
-      bio: member.bio,
-      quote: member.quote,
-      image_url: member.image_url,
-      display_order: member.display_order,
-    });
-    setLeadershipDialogOpen(true);
-  };
-
-  const handleSponsorEdit = (sponsor: Sponsor) => {
-    setEditingSponsor(sponsor);
-    setSponsorFormData({
-      name: sponsor.name,
-      logo_url: sponsor.logo_url,
-      website_url: sponsor.website_url,
-      tier: sponsor.tier,
-      display_order: sponsor.display_order,
-    });
-    setSponsorDialogOpen(true);
   };
 
   const resetEventForm = () => {
     setEditingEvent(null);
     setEventFormData({ title: "", description: "", event_date: "", start_time: "", end_time: "", location: "", event_type: "" });
-    setIsRecurring(false);
-    setRecurringFrequency("weekly");
-    setRecurringEndDate("");
-    setRecurringOccurrences(5);
-    setRecurringEndType("occurrences");
-    setIsBulkMode(false);
-    setBulkDates([]);
-    setNewBulkDate("");
+    setIsRecurring(false); setIsBulkMode(false); setBulkDates([]); setNewBulkDate("");
+    setRecurringFrequency("weekly"); setRecurringOccurrences(5); setRecurringEndType("occurrences"); setRecurringEndDate("");
   };
 
   const resetLeadershipForm = () => {
     setEditingLeadership(null);
     setLeadershipFormData({ name: "", position: "", bio: "", quote: "", image_url: "", display_order: 0 });
-    setUploadedFile(null);
-    setUploadPreview("");
+    setUploadedFile(null); setUploadPreview("");
   };
 
   const resetSponsorForm = () => {
@@ -491,634 +333,780 @@ export default function Admin() {
     setSponsorFormData({ name: "", logo_url: "", website_url: "", tier: "bronze", display_order: 0 });
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+  const handleSignOut = async () => { await supabase.auth.signOut(); navigate("/"); };
+
+  const handleNavChange = (section: Section) => {
+    setActiveSection(section);
+    if (section === "users") fetchUsers();
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  // --- Loading / Access ---
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You need admin privileges to access this page.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => navigate("/")} className="w-full">Go Home</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (!isAdmin) return (
+    <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <Card className="w-full max-w-sm text-center">
+        <CardHeader><CardTitle className="flex items-center justify-center gap-2"><AlertCircle className="text-destructive h-5 w-5" /> Access Denied</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">You need admin privileges to access this page.</p>
+          <Button onClick={() => navigate("/")} className="w-full">Go Home</Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // --- Upcoming events (next 3) ---
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcomingEvents = events
+    .filter(e => new Date(e.event_date + "T00:00:00") >= today)
+    .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-background p-4 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Welcome, {user?.email}</p>
-          </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
+    <div className="min-h-screen flex bg-muted/20">
+      {/* Sidebar */}
+      <aside className={`${sidebarOpen ? "w-56" : "w-16"} shrink-0 bg-background border-r border-border flex flex-col transition-all duration-200`}>
+        {/* Sidebar header */}
+        <div className="h-14 flex items-center px-4 border-b border-border gap-3">
+          <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => setSidebarOpen(v => !v)}>
+            <Menu className="h-4 w-4" />
           </Button>
+          {sidebarOpen && <span className="font-semibold text-sm truncate">CMS</span>}
         </div>
 
-        <Tabs defaultValue="events" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="leadership">Leadership</TabsTrigger>
-            <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
-          </TabsList>
+        {/* Nav links */}
+        <nav className="flex-1 p-2 space-y-0.5">
+          {NAV.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => handleNavChange(id)}
+              className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeSection === id
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {sidebarOpen && <span>{label}</span>}
+            </button>
+          ))}
+        </nav>
 
-          {/* Events Tab */}
-          <TabsContent value="events">
-            <Dialog open={eventDialogOpen} onOpenChange={(open) => { setEventDialogOpen(open); if (!open) resetEventForm(); }}>
-              <DialogTrigger asChild>
-                <Button className="mb-4"><Plus className="h-4 w-4 mr-2" />Add Event</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-semibold">{editingEvent ? "Edit Event" : "Create Event"}</DialogTitle>
-                  <DialogDescription>Add event details to your calendar</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleEventSubmit} className="space-y-6">
-                  {/* Title */}
+        {/* Sidebar footer */}
+        <div className="p-2 border-t border-border">
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            {sidebarOpen && <span>Sign Out</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="h-14 bg-background border-b border-border flex items-center px-6 gap-4 shrink-0">
+          <div className="flex-1">
+            <h1 className="text-sm font-semibold capitalize">{NAV.find(n => n.id === activeSection)?.label}</h1>
+          </div>
+          <span className="text-xs text-muted-foreground hidden sm:block">{user?.email}</span>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-auto p-6">
+
+          {/* ── DASHBOARD ── */}
+          {activeSection === "dashboard" && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h2 className="text-xl font-semibold">Welcome back 👋</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">Here's a quick overview of your site content.</p>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: "Events", value: events.length, icon: Calendar, section: "events" as Section },
+                  { label: "Upcoming", value: upcomingEvents.length, icon: CheckCircle2, section: "events" as Section },
+                  { label: "Leaders", value: leadershipMembers.length, icon: Users, section: "leadership" as Section },
+                  { label: "Sponsors", value: sponsors.length, icon: Trophy, section: "sponsors" as Section },
+                ].map(({ label, value, icon: Icon, section }) => (
+                  <button key={label} onClick={() => setActiveSection(section)}
+                    className="text-left bg-background border border-border rounded-lg p-4 hover:border-primary/50 transition-colors group">
+                    <div className="flex items-center justify-between mb-2">
+                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="text-2xl font-bold">{value}</div>
+                    <div className="text-xs text-muted-foreground">{label}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Upcoming events */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold">Upcoming Events</h3>
+                  <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => setActiveSection("events")}>
+                    View all <ChevronRight className="h-3 w-3 ml-1" />
+                  </Button>
+                </div>
+                {upcomingEvents.length === 0 ? (
+                  <div className="bg-background border border-dashed border-border rounded-lg p-6 text-center">
+                    <p className="text-sm text-muted-foreground">No upcoming events.</p>
+                    <Button size="sm" className="mt-3" onClick={() => { setActiveSection("events"); setEventDialogOpen(true); }}>
+                      <Plus className="h-3 w-3 mr-1" /> Add Event
+                    </Button>
+                  </div>
+                ) : (
                   <div className="space-y-2">
-                    <Input 
-                      id="title" 
-                      value={eventFormData.title} 
-                      onChange={(e) => setEventFormData({ ...eventFormData, title: e.target.value })} 
-                      placeholder="Add title"
-                      className="text-2xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
-                      required 
-                    />
-                  </div>
-
-                  {/* Date and Time Section */}
-                  <div className="space-y-4 p-4 bg-accent/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <div className="flex-1 grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="event_date" className="text-xs text-muted-foreground">Date</Label>
-                          <Input 
-                            id="event_date" 
-                            type="date" 
-                            value={eventFormData.event_date} 
-                            onChange={(e) => setEventFormData({ ...eventFormData, event_date: e.target.value })} 
-                            className="mt-1"
-                            required 
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="event_type" className="text-xs text-muted-foreground">Event Type</Label>
-                          <Select
-                            value={eventFormData.event_type}
-                            onValueChange={(value) => setEventFormData({ ...eventFormData, event_type: value })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Fundraiser">Fundraiser</SelectItem>
-                              <SelectItem value="Community Event">Community Event</SelectItem>
-                              <SelectItem value="Sports Event">Sports Event</SelectItem>
-                              <SelectItem value="Meeting">Meeting</SelectItem>
-                              <SelectItem value="Workshop">Workshop</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-muted-foreground" />
-                      <div className="flex-1 grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="start_time" className="text-xs text-muted-foreground">Start Time</Label>
-                          <Input 
-                            id="start_time" 
-                            type="time" 
-                            value={eventFormData.start_time} 
-                            onChange={(e) => setEventFormData({ ...eventFormData, start_time: e.target.value })} 
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="end_time" className="text-xs text-muted-foreground">End Time</Label>
-                          <Input 
-                            id="end_time" 
-                            type="time" 
-                            value={eventFormData.end_time} 
-                            onChange={(e) => setEventFormData({ ...eventFormData, end_time: e.target.value })} 
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-2" />
-                    <div className="flex-1">
-                      <Input 
-                        id="location" 
-                        value={eventFormData.location} 
-                        onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })} 
-                        placeholder="Add location"
-                        className="border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div className="flex items-start gap-3">
-                    <Type className="h-5 w-5 text-muted-foreground mt-2" />
-                    <div className="flex-1">
-                      <Textarea 
-                        id="description" 
-                        value={eventFormData.description} 
-                        onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })} 
-                        placeholder="Add description"
-                        rows={4}
-                        className="resize-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Recurring Event Toggle */}
-                  {!editingEvent && !isBulkMode && (
-                    <div className="flex items-center gap-3 pt-4 border-t">
-                      <Repeat className="h-5 w-5 text-muted-foreground" />
-                      <div className="flex-1 flex items-center justify-between">
-                        <Label htmlFor="recurring" className="text-sm font-medium">Recurring Event</Label>
-                        <Switch
-                          id="recurring"
-                          checked={isRecurring}
-                          onCheckedChange={(checked) => {
-                            setIsRecurring(checked);
-                            if (checked) setIsBulkMode(false);
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Recurring Event Options */}
-                  {isRecurring && !editingEvent && (
-                    <div className="space-y-4 pl-8 bg-muted/30 p-4 rounded-lg">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Frequency</Label>
-                          <Select
-                            value={recurringFrequency}
-                            onValueChange={(value: any) => setRecurringFrequency(value)}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="daily">Daily</SelectItem>
-                              <SelectItem value="weekly">Weekly</SelectItem>
-                              <SelectItem value="monthly">Monthly</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">End Type</Label>
-                          <Select
-                            value={recurringEndType}
-                            onValueChange={(value: any) => setRecurringEndType(value)}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="occurrences">After # of times</SelectItem>
-                              <SelectItem value="date">On specific date</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {recurringEndType === "occurrences" ? (
-                        <div>
-                          <Label htmlFor="occurrences" className="text-xs text-muted-foreground">
-                            Number of Occurrences
-                          </Label>
-                          <Input
-                            id="occurrences"
-                            type="number"
-                            min="1"
-                            max="365"
-                            value={recurringOccurrences}
-                            onChange={(e) => setRecurringOccurrences(parseInt(e.target.value) || 1)}
-                            className="mt-1"
-                          />
-                        </div>
-                      ) : (
-                        <div>
-                          <Label htmlFor="endDate" className="text-xs text-muted-foreground">
-                            End Date
-                          </Label>
-                          <Input
-                            id="endDate"
-                            type="date"
-                            value={recurringEndDate}
-                            onChange={(e) => setRecurringEndDate(e.target.value)}
-                            className="mt-1"
-                            min={eventFormData.event_date}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Bulk Mode Toggle */}
-                  {!editingEvent && !isRecurring && (
-                    <div className="flex items-center gap-3 pt-4 border-t">
-                      <CalendarPlus className="h-5 w-5 text-muted-foreground" />
-                      <div className="flex-1 flex items-center justify-between">
-                        <Label htmlFor="bulk" className="text-sm font-medium">Bulk Create (Multiple Dates)</Label>
-                        <Switch
-                          id="bulk"
-                          checked={isBulkMode}
-                          onCheckedChange={(checked) => {
-                            setIsBulkMode(checked);
-                            if (checked) {
-                              setIsRecurring(false);
-                              if (eventFormData.event_date && !bulkDates.includes(eventFormData.event_date)) {
-                                setBulkDates([eventFormData.event_date]);
-                              }
-                            } else {
-                              setBulkDates([]);
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bulk Dates */}
-                  {isBulkMode && !editingEvent && (
-                    <div className="space-y-3 pl-8 bg-muted/30 p-4 rounded-lg">
-                      <div className="flex gap-2">
-                        <Input
-                          type="date"
-                          value={newBulkDate}
-                          onChange={(e) => setNewBulkDate(e.target.value)}
-                          placeholder="Add date"
-                        />
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            if (newBulkDate && !bulkDates.includes(newBulkDate)) {
-                              setBulkDates([...bulkDates, newBulkDate].sort());
-                              setNewBulkDate("");
-                            }
-                          }}
-                          size="sm"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      {bulkDates.length > 0 && (
-                        <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">
-                            Selected Dates ({bulkDates.length})
-                          </Label>
-                          <div className="flex flex-wrap gap-2">
-                            {bulkDates.map((date) => (
-                              <div
-                                key={date}
-                                className="flex items-center gap-1 bg-background px-2 py-1 rounded-md text-xs border"
-                              >
-                                <span>{format(parseISO(date), "MMM dd, yyyy")}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setBulkDates(bulkDates.filter(d => d !== date))}
-                                  className="hover:text-destructive"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
+                    {upcomingEvents.map(event => (
+                      <div key={event.id} className="bg-background border border-border rounded-lg px-4 py-3 flex items-center gap-4">
+                        <div className="text-center min-w-[40px]">
+                          <div className="text-xs text-muted-foreground uppercase">
+                            {format(new Date(event.event_date + "T00:00:00"), "MMM")}
+                          </div>
+                          <div className="text-lg font-bold leading-none">
+                            {format(new Date(event.event_date + "T00:00:00"), "d")}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-end gap-3 pt-4 border-t">
-                    <Button type="button" variant="outline" onClick={() => setEventDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">
-                      {editingEvent ? "Update" : "Create"} Event
-                    </Button>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{event.title}</p>
+                          {event.location && <p className="text-xs text-muted-foreground truncate">{event.location}</p>}
+                        </div>
+                        {event.event_type && (
+                          <Badge variant="secondary" className="text-xs shrink-0">{event.event_type}</Badge>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+                )}
+              </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => (
-                <Card key={event.id}>
-                  <CardHeader>
-                    <CardTitle>{event.title}</CardTitle>
-                    <CardDescription>{new Date(event.event_date).toLocaleDateString()}{event.start_time && ` • ${event.start_time}`}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {event.description && <p className="text-sm text-muted-foreground mb-2">{event.description}</p>}
-                    {event.location && <p className="text-sm mb-2">📍 {event.location}</p>}
-                    {event.event_type && <p className="text-sm mb-4">🏷️ {event.event_type}</p>}
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEventEdit(event)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleEventDelete(event.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {/* Quick actions */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Quick Actions</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { setActiveSection("events"); setEventDialogOpen(true); }}>
+                    <Plus className="h-3 w-3 mr-1" /> New Event
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setActiveSection("leadership"); setLeadershipDialogOpen(true); }}>
+                    <Plus className="h-3 w-3 mr-1" /> Add Leader
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setActiveSection("sponsors"); setSponsorDialogOpen(true); }}>
+                    <Plus className="h-3 w-3 mr-1" /> Add Sponsor
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => window.open("/", "_blank")}>
+                    <ExternalLink className="h-3 w-3 mr-1" /> View Site
+                  </Button>
+                </div>
+              </div>
             </div>
+          )}
 
-            {events.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <p className="text-muted-foreground mb-4">No events yet. Create your first event!</p>
-                  <Button onClick={() => setEventDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add Event</Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
+          {/* ── EVENTS ── */}
+          {activeSection === "events" && (
+            <div className="space-y-4 max-w-5xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Events</h2>
+                  <p className="text-xs text-muted-foreground">{events.length} total</p>
+                </div>
+                <Button size="sm" onClick={() => { resetEventForm(); setEventDialogOpen(true); }}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Event
+                </Button>
+              </div>
 
-          {/* Leadership Tab */}
-          <TabsContent value="leadership">
-            <Dialog open={leadershipDialogOpen} onOpenChange={(open) => { setLeadershipDialogOpen(open); if (!open) resetLeadershipForm(); }}>
-              <DialogTrigger asChild>
-                <Button className="mb-4"><Plus className="h-4 w-4 mr-2" />Add Member</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-semibold">{editingLeadership ? "Edit Member" : "Add Member"}</DialogTitle>
-                  <DialogDescription>Add leadership team member information</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleLeadershipSubmit} className="space-y-6">
-                  {/* Profile Photo Upload */}
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Profile Photo</Label>
-                    <div className="flex items-center gap-4">
-                      {uploadPreview || leadershipFormData.image_url ? (
-                        <div className="relative">
-                          <img 
-                            src={uploadPreview || leadershipFormData.image_url} 
-                            alt="Preview" 
-                            className="w-24 h-24 rounded-full object-cover border-2 border-border"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                            onClick={() => {
-                              setUploadedFile(null);
-                              setUploadPreview("");
-                              setLeadershipFormData({ ...leadershipFormData, image_url: "" });
-                            }}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
+              {events.length === 0 ? (
+                <div className="bg-background border border-dashed border-border rounded-lg p-12 text-center">
+                  <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">No events yet.</p>
+                  <Button size="sm" onClick={() => setEventDialogOpen(true)}><Plus className="h-3 w-3 mr-1" /> Add Event</Button>
+                </div>
+              ) : (
+                <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
+                  {events.map(event => (
+                    <div key={event.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                      <div className="text-center min-w-[44px] shrink-0">
+                        <div className="text-[10px] text-muted-foreground uppercase font-medium">
+                          {format(new Date(event.event_date + "T00:00:00"), "MMM")}
                         </div>
-                      ) : (
-                        <div className="w-24 h-24 rounded-full bg-accent flex items-center justify-center">
-                          <Upload className="h-8 w-8 text-muted-foreground" />
+                        <div className="text-base font-bold leading-tight">
+                          {format(new Date(event.event_date + "T00:00:00"), "d")}
                         </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{event.title}</p>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          {event.start_time && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" />{event.start_time.slice(0, 5)}
+                            </span>
+                          )}
+                          {event.location && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                              <MapPin className="h-3 w-3 shrink-0" />{event.location}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {event.event_type && (
+                        <Badge variant="secondary" className="text-xs shrink-0 hidden sm:flex">{event.event_type}</Badge>
                       )}
-                      <div className="flex-1">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setUploadedFile(file);
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setUploadPreview(reader.result as string);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                          className="cursor-pointer"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Upload a professional headshot (JPG, PNG)
-                        </p>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
+                          setEditingEvent(event);
+                          setEventFormData({
+                            title: event.title, description: event.description || "",
+                            event_date: event.event_date, start_time: event.start_time || "",
+                            end_time: event.end_time || "", location: event.location || "",
+                            event_type: event.event_type || "",
+                          });
+                          setEventDialogOpen(true);
+                        }}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteEvent(event.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Name and Position */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name *</Label>
-                      <Input 
-                        id="name" 
-                        value={leadershipFormData.name} 
-                        onChange={(e) => setLeadershipFormData({ ...leadershipFormData, name: e.target.value })} 
-                        placeholder="John Doe"
-                        required 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="position">Position *</Label>
-                      <Input 
-                        id="position" 
-                        value={leadershipFormData.position} 
-                        onChange={(e) => setLeadershipFormData({ ...leadershipFormData, position: e.target.value })} 
-                        placeholder="President"
-                        required 
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea 
-                      id="bio" 
-                      value={leadershipFormData.bio} 
-                      onChange={(e) => setLeadershipFormData({ ...leadershipFormData, bio: e.target.value })} 
-                      placeholder="Brief biography and background..."
-                      rows={4}
-                      className="resize-none"
-                    />
-                  </div>
-
-                  {/* Quote */}
-                  <div className="space-y-2">
-                    <Label htmlFor="quote">Personal Quote</Label>
-                    <Textarea 
-                      id="quote" 
-                      value={leadershipFormData.quote} 
-                      onChange={(e) => setLeadershipFormData({ ...leadershipFormData, quote: e.target.value })} 
-                      placeholder="Inspirational quote or message..."
-                      rows={2}
-                      className="resize-none"
-                    />
-                  </div>
-
-                  {/* Display Order */}
-                  <div className="space-y-2">
-                    <Label htmlFor="display_order">Display Order</Label>
-                    <Input 
-                      id="display_order" 
-                      type="number" 
-                      value={leadershipFormData.display_order} 
-                      onChange={(e) => setLeadershipFormData({ ...leadershipFormData, display_order: parseInt(e.target.value) || 0 })}
-                      placeholder="0"
-                    />
-                    <p className="text-xs text-muted-foreground">Lower numbers appear first</p>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-end gap-3 pt-4 border-t">
-                    <Button type="button" variant="outline" onClick={() => setLeadershipDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit">
-                      {editingLeadership ? "Update" : "Add"} Member
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {leadershipMembers.map((member) => (
-                <Card key={member.id}>
-                  <CardHeader>
-                    <CardTitle>{member.name}</CardTitle>
-                    <CardDescription>{member.position}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2">{member.bio}</p>
-                    {member.quote && <p className="text-sm italic text-muted-foreground mb-2">"{member.quote}"</p>}
-                    <p className="text-xs text-muted-foreground mb-4">Order: {member.display_order}</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleLeadershipEdit(member)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleLeadershipDelete(member.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  ))}
+                </div>
+              )}
             </div>
+          )}
 
-            {leadershipMembers.length === 0 && (
+          {/* ── LEADERSHIP ── */}
+          {activeSection === "leadership" && (
+            <div className="space-y-4 max-w-4xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Leadership Team</h2>
+                  <p className="text-xs text-muted-foreground">{leadershipMembers.length} members</p>
+                </div>
+                <Button size="sm" onClick={() => { resetLeadershipForm(); setLeadershipDialogOpen(true); }}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Member
+                </Button>
+              </div>
+
+              {leadershipMembers.length === 0 ? (
+                <div className="bg-background border border-dashed border-border rounded-lg p-12 text-center">
+                  <Users className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">No members yet.</p>
+                  <Button size="sm" onClick={() => setLeadershipDialogOpen(true)}><Plus className="h-3 w-3 mr-1" /> Add Member</Button>
+                </div>
+              ) : (
+                <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
+                  {leadershipMembers.map(member => (
+                    <div key={member.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                      {member.image_url ? (
+                        <img src={member.image_url} alt={member.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-border" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{member.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{member.position}</p>
+                      </div>
+                      <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">#{member.display_order}</span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
+                          setEditingLeadership(member);
+                          setLeadershipFormData({
+                            name: member.name, position: member.position,
+                            bio: member.bio, quote: member.quote,
+                            image_url: member.image_url, display_order: member.display_order,
+                          });
+                          setLeadershipDialogOpen(true);
+                        }}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteMember(member.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── SPONSORS ── */}
+          {activeSection === "sponsors" && (
+            <div className="space-y-4 max-w-4xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Sponsorships</h2>
+                  <p className="text-xs text-muted-foreground">{sponsors.length} sponsors</p>
+                </div>
+                <Button size="sm" onClick={() => { resetSponsorForm(); setSponsorDialogOpen(true); }}>
+                  <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Sponsor
+                </Button>
+              </div>
+
+              {sponsors.length === 0 ? (
+                <div className="bg-background border border-dashed border-border rounded-lg p-12 text-center">
+                  <Star className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-4">No sponsors yet.</p>
+                  <Button size="sm" onClick={() => setSponsorDialogOpen(true)}><Plus className="h-3 w-3 mr-1" /> Add Sponsor</Button>
+                </div>
+              ) : (
+                <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
+                  {sponsors.map(sponsor => (
+                    <div key={sponsor.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                      {sponsor.logo_url ? (
+                        <img src={sponsor.logo_url} alt={sponsor.name} className="w-10 h-10 object-contain shrink-0 rounded border border-border p-1" />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-accent flex items-center justify-center shrink-0">
+                          <Star className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{sponsor.name}</p>
+                        {sponsor.website_url && (
+                          <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline truncate block">
+                            {sponsor.website_url}
+                          </a>
+                        )}
+                      </div>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${TIER_COLORS[sponsor.tier] || TIER_COLORS.bronze}`}>
+                        {sponsor.tier.charAt(0).toUpperCase() + sponsor.tier.slice(1)}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
+                          setEditingSponsor(sponsor);
+                          setSponsorFormData({
+                            name: sponsor.name, logo_url: sponsor.logo_url,
+                            website_url: sponsor.website_url, tier: sponsor.tier,
+                            display_order: sponsor.display_order,
+                          });
+                          setSponsorDialogOpen(true);
+                        }}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteSponsor(sponsor.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── USERS ── */}
+          {activeSection === "users" && (
+            <div className="space-y-4 max-w-3xl">
+              <div>
+                <h2 className="text-lg font-semibold">Users & Access</h2>
+                <p className="text-xs text-muted-foreground">Manage admin roles for your team.</p>
+              </div>
+
               <Card>
-                <CardContent className="py-12 text-center">
-                  <p className="text-muted-foreground mb-4">No leadership members yet.</p>
-                  <Button onClick={() => setLeadershipDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add Member</Button>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <UserCheck className="h-4 w-4 text-primary" /> Grant Admin Access
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    To grant admin access to a new team member, they must first create an account at{" "}
+                    <a href="/auth" target="_blank" className="text-primary hover:underline">/auth</a>.
+                    Then enter their user ID below to grant admin privileges.
+                  </p>
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const form = e.currentTarget;
+                      const uid = (form.elements.namedItem("uid") as HTMLInputElement).value.trim();
+                      if (!uid) return;
+                      await grantAdminRole(uid);
+                      form.reset();
+                    }}
+                    className="flex gap-2"
+                  >
+                    <Input name="uid" placeholder="User ID (UUID)" className="font-mono text-xs" />
+                    <Button type="submit" size="sm" className="shrink-0">Grant Admin</Button>
+                  </form>
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
 
-          {/* Sponsors Tab */}
-          <TabsContent value="sponsors">
-            <Dialog open={sponsorDialogOpen} onOpenChange={(open) => { setSponsorDialogOpen(open); if (!open) resetSponsorForm(); }}>
-              <DialogTrigger asChild>
-                <Button className="mb-4"><Plus className="h-4 w-4 mr-2" />Add Sponsor</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingSponsor ? "Edit Sponsor" : "Add Sponsor"}</DialogTitle>
-                  <DialogDescription>Fill in the sponsor details below.</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSponsorSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="sponsor_name">Name *</Label>
-                    <Input id="sponsor_name" value={sponsorFormData.name} onChange={(e) => setSponsorFormData({ ...sponsorFormData, name: e.target.value })} required />
-                  </div>
-                  <div>
-                    <Label htmlFor="logo_url">Logo URL</Label>
-                    <Input id="logo_url" type="url" value={sponsorFormData.logo_url} onChange={(e) => setSponsorFormData({ ...sponsorFormData, logo_url: e.target.value })} placeholder="https://example.com/logo.png" />
-                  </div>
-                  <div>
-                    <Label htmlFor="website_url">Website URL</Label>
-                    <Input id="website_url" type="url" value={sponsorFormData.website_url} onChange={(e) => setSponsorFormData({ ...sponsorFormData, website_url: e.target.value })} placeholder="https://example.com" />
-                  </div>
-                  <div>
-                    <Label htmlFor="tier">Tier</Label>
-                    <Select value={sponsorFormData.tier} onValueChange={(value) => setSponsorFormData({ ...sponsorFormData, tier: value })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="platinum">Platinum</SelectItem>
-                        <SelectItem value="gold">Gold</SelectItem>
-                        <SelectItem value="silver">Silver</SelectItem>
-                        <SelectItem value="bronze">Bronze</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="sponsor_order">Display Order</Label>
-                    <Input id="sponsor_order" type="number" value={sponsorFormData.display_order} onChange={(e) => setSponsorFormData({ ...sponsorFormData, display_order: parseInt(e.target.value) })} />
-                  </div>
-                  <Button type="submit" className="w-full">{editingSponsor ? "Update" : "Add"} Sponsor</Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {sponsors.map((sponsor) => (
-                <Card key={sponsor.id}>
-                  <CardHeader>
-                    <CardTitle>{sponsor.name}</CardTitle>
-                    <CardDescription>{sponsor.tier.charAt(0).toUpperCase() + sponsor.tier.slice(1)} Tier</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {sponsor.website_url && (
-                      <p className="text-sm mb-2 truncate">
-                        <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                          {sponsor.website_url}
-                        </a>
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mb-4">Order: {sponsor.display_order}</p>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleSponsorEdit(sponsor)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleSponsorDelete(sponsor.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {sponsors.length === 0 && (
               <Card>
-                <CardContent className="py-12 text-center">
-                  <p className="text-muted-foreground mb-4">No sponsors yet.</p>
-                  <Button onClick={() => setSponsorDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add Sponsor</Button>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" /> Your Account
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {usersLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {users.map(u => (
+                        <div key={u.id} className="flex items-center gap-3 p-2 rounded-md bg-muted/30">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <Users className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{u.email}</p>
+                            <p className="text-xs text-muted-foreground font-mono truncate">{u.id}</p>
+                          </div>
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium shrink-0">
+                            Admin
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
-        </Tabs>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">How to Add a New Admin</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {[
+                    "Ask the new team member to sign up at /auth",
+                    "They copy their User ID from their profile or you find it in Supabase",
+                    "Paste their User ID above and click Grant Admin",
+                    "They can now log in and access /admin",
+                  ].map((step, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center shrink-0 mt-0.5 font-semibold">
+                        {i + 1}
+                      </span>
+                      <p className="text-sm text-muted-foreground">{step}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </main>
       </div>
+
+      {/* ── EVENT DIALOG ── */}
+      <Dialog open={eventDialogOpen} onOpenChange={(open) => { setEventDialogOpen(open); if (!open) resetEventForm(); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingEvent ? "Edit Event" : "New Event"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEventSubmit} className="space-y-4 mt-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Title *</Label>
+              <Input
+                value={eventFormData.title}
+                onChange={e => setEventFormData({ ...eventFormData, title: e.target.value })}
+                placeholder="Event name"
+                className="mt-1"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Date *</Label>
+                <Input type="date" value={eventFormData.event_date}
+                  onChange={e => setEventFormData({ ...eventFormData, event_date: e.target.value })}
+                  className="mt-1" required />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Type</Label>
+                <Select value={eventFormData.event_type} onValueChange={v => setEventFormData({ ...eventFormData, event_type: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Select…" /></SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Start Time</Label>
+                <Input type="time" value={eventFormData.start_time}
+                  onChange={e => setEventFormData({ ...eventFormData, start_time: e.target.value })} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">End Time</Label>
+                <Input type="time" value={eventFormData.end_time}
+                  onChange={e => setEventFormData({ ...eventFormData, end_time: e.target.value })} className="mt-1" />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Location</Label>
+              <Input value={eventFormData.location}
+                onChange={e => setEventFormData({ ...eventFormData, location: e.target.value })}
+                placeholder="Where is this happening?" className="mt-1" />
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Description</Label>
+              <Textarea value={eventFormData.description}
+                onChange={e => setEventFormData({ ...eventFormData, description: e.target.value })}
+                placeholder="Optional details…" rows={3} className="mt-1 resize-none" />
+            </div>
+
+            {!editingEvent && (
+              <div className="space-y-3 border-t border-border pt-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm">Recurring event</Label>
+                  </div>
+                  <Switch checked={isRecurring} onCheckedChange={v => { setIsRecurring(v); if (v) setIsBulkMode(false); }} />
+                </div>
+
+                {isRecurring && (
+                  <div className="space-y-3 pl-6">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Frequency</Label>
+                        <Select value={recurringFrequency} onValueChange={(v: any) => setRecurringFrequency(v)}>
+                          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="daily">Daily</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">End</Label>
+                        <Select value={recurringEndType} onValueChange={(v: any) => setRecurringEndType(v)}>
+                          <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="occurrences">After # times</SelectItem>
+                            <SelectItem value="date">By date</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    {recurringEndType === "occurrences" ? (
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Occurrences</Label>
+                        <Input type="number" min="1" max="365" value={recurringOccurrences}
+                          onChange={e => setRecurringOccurrences(parseInt(e.target.value) || 1)} className="mt-1 w-24" />
+                      </div>
+                    ) : (
+                      <div>
+                        <Label className="text-xs text-muted-foreground">End Date</Label>
+                        <Input type="date" value={recurringEndDate} min={eventFormData.event_date}
+                          onChange={e => setRecurringEndDate(e.target.value)} className="mt-1" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!isRecurring && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalendarPlus className="h-4 w-4 text-muted-foreground" />
+                      <Label className="text-sm">Multiple dates</Label>
+                    </div>
+                    <Switch checked={isBulkMode} onCheckedChange={v => {
+                      setIsBulkMode(v);
+                      if (v && eventFormData.event_date && !bulkDates.includes(eventFormData.event_date)) {
+                        setBulkDates([eventFormData.event_date]);
+                      }
+                      if (!v) setBulkDates([]);
+                    }} />
+                  </div>
+                )}
+
+                {isBulkMode && (
+                  <div className="pl-6 space-y-2">
+                    <div className="flex gap-2">
+                      <Input type="date" value={newBulkDate} onChange={e => setNewBulkDate(e.target.value)} className="flex-1" />
+                      <Button type="button" size="sm" onClick={() => {
+                        if (newBulkDate && !bulkDates.includes(newBulkDate)) {
+                          setBulkDates([...bulkDates, newBulkDate].sort());
+                          setNewBulkDate("");
+                        }
+                      }}>
+                        <Plus className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    {bulkDates.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {bulkDates.map(d => (
+                          <span key={d} className="flex items-center gap-1 bg-muted text-xs px-2 py-0.5 rounded-full">
+                            {format(parseISO(d), "MMM d")}
+                            <button type="button" onClick={() => setBulkDates(bulkDates.filter(x => x !== d))}>
+                              <X className="h-2.5 w-2.5 hover:text-destructive" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setEventDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" size="sm">{editingEvent ? "Save Changes" : "Create Event"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── LEADERSHIP DIALOG ── */}
+      <Dialog open={leadershipDialogOpen} onOpenChange={(open) => { setLeadershipDialogOpen(open); if (!open) resetLeadershipForm(); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingLeadership ? "Edit Member" : "Add Member"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleLeadershipSubmit} className="space-y-4 mt-2">
+            {/* Photo */}
+            <div className="flex items-center gap-4">
+              {uploadPreview || leadershipFormData.image_url ? (
+                <div className="relative shrink-0">
+                  <img src={uploadPreview || leadershipFormData.image_url} alt="Preview"
+                    className="w-16 h-16 rounded-full object-cover border border-border" />
+                  <Button type="button" variant="destructive" size="icon"
+                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full"
+                    onClick={() => { setUploadedFile(null); setUploadPreview(""); setLeadershipFormData({ ...leadershipFormData, image_url: "" }); }}>
+                    <X className="h-2.5 w-2.5" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center shrink-0">
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex-1">
+                <Label className="text-xs text-muted-foreground">Photo</Label>
+                <Input type="file" accept="image/*" className="mt-1 cursor-pointer"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setUploadedFile(file);
+                      const reader = new FileReader();
+                      reader.onloadend = () => setUploadPreview(reader.result as string);
+                      reader.readAsDataURL(file);
+                    }
+                  }} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Full Name *</Label>
+                <Input value={leadershipFormData.name}
+                  onChange={e => setLeadershipFormData({ ...leadershipFormData, name: e.target.value })}
+                  placeholder="Jane Smith" className="mt-1" required />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Position *</Label>
+                <Input value={leadershipFormData.position}
+                  onChange={e => setLeadershipFormData({ ...leadershipFormData, position: e.target.value })}
+                  placeholder="President" className="mt-1" required />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Bio</Label>
+              <Textarea value={leadershipFormData.bio}
+                onChange={e => setLeadershipFormData({ ...leadershipFormData, bio: e.target.value })}
+                placeholder="Brief biography…" rows={3} className="mt-1 resize-none" />
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Quote <span className="text-muted-foreground/60">(optional)</span></Label>
+              <Input value={leadershipFormData.quote}
+                onChange={e => setLeadershipFormData({ ...leadershipFormData, quote: e.target.value })}
+                placeholder="Inspirational quote" className="mt-1" />
+            </div>
+
+            <div className="w-24">
+              <Label className="text-xs text-muted-foreground">Display Order</Label>
+              <Input type="number" value={leadershipFormData.display_order}
+                onChange={e => setLeadershipFormData({ ...leadershipFormData, display_order: parseInt(e.target.value) || 0 })}
+                className="mt-1" />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setLeadershipDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" size="sm">{editingLeadership ? "Save Changes" : "Add Member"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── SPONSOR DIALOG ── */}
+      <Dialog open={sponsorDialogOpen} onOpenChange={(open) => { setSponsorDialogOpen(open); if (!open) resetSponsorForm(); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingSponsor ? "Edit Sponsor" : "Add Sponsor"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSponsorSubmit} className="space-y-4 mt-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Name *</Label>
+              <Input value={sponsorFormData.name}
+                onChange={e => setSponsorFormData({ ...sponsorFormData, name: e.target.value })}
+                placeholder="Company name" className="mt-1" required />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Tier</Label>
+                <Select value={sponsorFormData.tier} onValueChange={v => setSponsorFormData({ ...sponsorFormData, tier: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="platinum">Platinum</SelectItem>
+                    <SelectItem value="gold">Gold</SelectItem>
+                    <SelectItem value="silver">Silver</SelectItem>
+                    <SelectItem value="bronze">Bronze</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Display Order</Label>
+                <Input type="number" value={sponsorFormData.display_order}
+                  onChange={e => setSponsorFormData({ ...sponsorFormData, display_order: parseInt(e.target.value) || 0 })}
+                  className="mt-1" />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Logo URL</Label>
+              <Input type="url" value={sponsorFormData.logo_url}
+                onChange={e => setSponsorFormData({ ...sponsorFormData, logo_url: e.target.value })}
+                placeholder="https://example.com/logo.png" className="mt-1" />
+            </div>
+
+            <div>
+              <Label className="text-xs text-muted-foreground">Website</Label>
+              <Input type="url" value={sponsorFormData.website_url}
+                onChange={e => setSponsorFormData({ ...sponsorFormData, website_url: e.target.value })}
+                placeholder="https://example.com" className="mt-1" />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setSponsorDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" size="sm">{editingSponsor ? "Save Changes" : "Add Sponsor"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
