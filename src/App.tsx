@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import GetInvolved from "./pages/GetInvolved";
+import JoinUs from "./pages/JoinUs";
 import Events from "./pages/Events";
 import EventsCalendar from "./pages/EventsCalendar";
 import PolarPlunge from "./pages/PolarPlunge";
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/get-involved" element={<GetInvolved />} />
+              <Route path="/join" element={<JoinUs />} />
               <Route path="/events" element={<EventsCalendar />} />
               <Route path="/events/list" element={<Events />} />
               <Route path="/polar-plunge" element={<PolarPlunge />} />
