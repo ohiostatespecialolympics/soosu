@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, MessageCircle, Calendar, Users, Heart, ArrowRight, ExternalLink, Sparkles, ChevronDown } from "lucide-react";
+import { CheckCircle2, Circle, MessageCircle, Calendar, Users, Heart, ArrowRight, ExternalLink } from "lucide-react";
 
 const steps = [
   {
@@ -33,9 +33,9 @@ const steps = [
   },
   {
     icon: CheckCircle2,
-    title: "Complete a Background Check",
+    title: "Complete Online Training",
     description:
-      "All volunteers need to complete a brief background check through Special Olympics Ohio — it's free and straightforward. We'll walk you through the process once you're connected with us.",
+      "Once you've filled out the interest form and joined the GroupMe, you'll be added to our Canvas page. From there, complete a quick 15-minute online training — it's simple, self-paced, and only needs to be done once.",
   },
   {
     icon: Calendar,
@@ -89,31 +89,27 @@ const JoinUs = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="relative py-28 md:py-40 px-4 overflow-hidden bg-background">
-        {/* Background accents */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
+      <section className="relative py-20 md:py-32 px-4 overflow-hidden bg-primary">
+        {/* Diagonal slice */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-background" style={{ clipPath: 'polygon(0 100%, 100% 0, 100% 100%)' }} />
 
-        <div className="container mx-auto max-w-3xl relative z-10 text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-muted border border-border">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="font-montserrat text-sm font-medium text-foreground">
-              Special Olympics at Ohio State
-            </span>
-          </div>
-
-          <h1 className="font-oswald text-5xl md:text-7xl font-black tracking-tight leading-[1.05]">
-            <span className="block text-foreground">Ready to Make</span>
-            <span className="block text-primary mt-1">a Difference?</span>
-          </h1>
-
-          <p className="font-montserrat text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto">
-            Getting involved is easy. Follow these five steps and you'll be
-            part of one of the most rewarding communities on campus.
-          </p>
-
-          <div className="pt-2">
-            <ChevronDown className="h-6 w-6 text-muted-foreground mx-auto animate-bounce" />
+        <div className="container mx-auto max-w-4xl relative z-10">
+          <div className="grid md:grid-cols-[1fr,auto] gap-8 items-end">
+            <div className="space-y-5">
+              <p className="font-montserrat text-sm font-semibold tracking-widest uppercase text-primary-foreground/70">
+                Volunteer with us
+              </p>
+              <h1 className="font-oswald text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.08] text-primary-foreground">
+                Five steps to<br />join the team.
+              </h1>
+              <p className="font-montserrat text-base md:text-lg text-primary-foreground/80 leading-relaxed max-w-lg">
+                No experience needed — just a willingness to show up. Follow the checklist below and you'll be part of one of the most rewarding communities on campus.
+              </p>
+            </div>
+            <div className="hidden md:flex flex-col items-center gap-2 pb-4">
+              <span className="font-oswald text-7xl font-black text-primary-foreground/20">5</span>
+              <span className="font-montserrat text-xs font-semibold uppercase tracking-widest text-primary-foreground/50">steps</span>
+            </div>
           </div>
         </div>
       </section>
