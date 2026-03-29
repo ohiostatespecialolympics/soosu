@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, MessageCircle, Calendar, Users, Heart, ArrowRight, ExternalLink, Sparkles, ChevronDown } from "lucide-react";
+import { CheckCircle2, Circle, MessageCircle, Calendar, Users, Heart, ArrowRight, ExternalLink } from "lucide-react";
 
 const steps = [
   {
