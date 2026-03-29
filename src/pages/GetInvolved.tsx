@@ -79,7 +79,7 @@ const GetInvolved = () => {
                 </ul>
               </div>
               <a
-                href="https://www.ccsoh.us/Page/1229"
+                href="https://www.ccsoh.us/academics/special-ed/special-olympics"
                 target="_blank"
                 rel="noopener noreferrer"
               >
