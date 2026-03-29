@@ -176,27 +176,16 @@ export default function Admin() {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      // Get all user roles
-      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
-      const adminIds = new Set((roles || []).filter(r => r.role === "admin").map(r => r.user_id));
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-      // Use the service role to get users list via the admin API (we use auth.users via a trick)
-      // We'll show the current user + any we can access via user_roles
-      const currentUserEntry: UserWithRole = {
-        id: user?.id || "",
-        email: user?.email || "",
-        created_at: user?.created_at || "",
-        role: adminIds.has(user?.id || "") ? "admin" : "user",
-      };
+      const response = await supabase.functions.invoke("list-users");
+      if (response.error) throw response.error;
 
-      // Get all user IDs from roles table
-      const roleMap: Record<string, string> = {};
-      (roles || []).forEach(r => { roleMap[r.user_id] = r.role; });
-
-      // We can only show current user since we can't query auth.users from client
-      // Build a list from what we know
-      const knownUsers: UserWithRole[] = [currentUserEntry];
-      setUsers(knownUsers);
+      setUsers(response.data as UserWithRole[]);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+      toast({ title: "Error", description: "Failed to load users.", variant: "destructive" });
     } finally {
       setUsersLoading(false);
     }
