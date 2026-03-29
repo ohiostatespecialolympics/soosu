@@ -33,9 +33,9 @@ const steps = [
   },
   {
     icon: CheckCircle2,
-    title: "Complete a Background Check",
+    title: "Complete Online Training",
     description:
-      "All volunteers need to complete a brief background check through Special Olympics Ohio — it's free and straightforward. We'll walk you through the process once you're connected with us.",
+      "Once you've filled out the interest form and joined the GroupMe, you'll be added to our Canvas page. From there, complete a quick 15-minute online training — it's simple, self-paced, and only needs to be done once.",
   },
   {
     icon: Calendar,
