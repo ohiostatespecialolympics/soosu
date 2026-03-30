@@ -2,8 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Heart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,66 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import logo from "@/assets/logo.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [customAmount, setCustomAmount] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
   const location = useLocation();
-  const { toast } = useToast();
-
-  const presetAmounts = [25, 50, 100, 250];
-
-  const handleDonation = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsProcessing(true);
-
-    const formData = new FormData(e.currentTarget);
-    const amount = selectedAmount || parseFloat(customAmount);
-    const email = formData.get("email") as string;
-    const name = formData.get("name") as string;
-    const message = formData.get("message") as string;
-
-    if (!amount || amount < 1) {
-      toast({
-        title: "Invalid amount",
-        description: "Please select or enter a donation amount",
-        variant: "destructive",
-      });
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke("create-donation", {
-        body: { amount, email, name, message },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, "_blank");
-        setDonateOpen(false);
-        setSelectedAmount(null);
-        setCustomAmount("");
-      }
-    } catch (error) {
-      console.error("Donation error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process donation. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const navigationStructure = [
     { to: "/", label: "Home" },
@@ -175,91 +119,11 @@ const Navigation = () => {
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="font-oswald text-2xl">Support Special Olympics at OSU</DialogTitle>
+                  <DialogTitle className="font-oswald text-2xl">Donations Coming Soon!</DialogTitle>
                   <DialogDescription className="font-montserrat">
-                    Your donation helps provide year-round sports training and competition for athletes with intellectual disabilities.
+                    We're setting up our online donation system. Check back soon for ways to support Special Olympics at OSU!
                   </DialogDescription>
                 </DialogHeader>
-                <form className="space-y-4 mt-4" onSubmit={handleDonation}>
-                  <div className="space-y-3">
-                    <Label className="font-montserrat">Select Amount</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {presetAmounts.map((amount) => (
-                        <Button
-                          key={amount}
-                          type="button"
-                          variant={selectedAmount === amount ? "default" : "outline"}
-                          className="font-montserrat font-semibold"
-                          onClick={() => {
-                            setSelectedAmount(amount);
-                            setCustomAmount("");
-                          }}
-                        >
-                          ${amount}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="custom-amount" className="font-montserrat">Or Enter Custom Amount</Label>
-                    <Input
-                      id="custom-amount"
-                      type="number"
-                      min="1"
-                      step="0.01"
-                      placeholder="Enter amount"
-                      className="font-montserrat"
-                      value={customAmount}
-                      onChange={(e) => {
-                        setCustomAmount(e.target.value);
-                        setSelectedAmount(null);
-                      }}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="font-montserrat">Full Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder="Your name"
-                      className="font-montserrat"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="font-montserrat">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      className="font-montserrat"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="message" className="font-montserrat">Message (Optional)</Label>
-                    <Textarea
-                      id="message"
-                      name="message"
-                      placeholder="Any special dedication or message"
-                      className="font-montserrat"
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full font-montserrat font-semibold"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? "Processing..." : "Continue to Payment"}
-                  </Button>
-                </form>
               </DialogContent>
             </Dialog>
           </div>
@@ -331,94 +195,11 @@ const Navigation = () => {
               </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="font-oswald text-2xl">Support Special Olympics at OSU</DialogTitle>
+                  <DialogTitle className="font-oswald text-2xl">Donations Coming Soon!</DialogTitle>
                   <DialogDescription className="font-montserrat">
-                    Your donation helps provide year-round sports training and competition for athletes with intellectual disabilities.
+                    We're setting up our online donation system. Check back soon for ways to support Special Olympics at OSU!
                   </DialogDescription>
                 </DialogHeader>
-                <form className="space-y-4 mt-4" onSubmit={(e) => {
-                  handleDonation(e);
-                  setIsOpen(false);
-                }}>
-                  <div className="space-y-3">
-                    <Label className="font-montserrat">Select Amount</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {presetAmounts.map((amount) => (
-                        <Button
-                          key={amount}
-                          type="button"
-                          variant={selectedAmount === amount ? "default" : "outline"}
-                          className="font-montserrat font-semibold"
-                          onClick={() => {
-                            setSelectedAmount(amount);
-                            setCustomAmount("");
-                          }}
-                        >
-                          ${amount}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-custom-amount" className="font-montserrat">Or Enter Custom Amount</Label>
-                    <Input
-                      id="mobile-custom-amount"
-                      type="number"
-                      min="1"
-                      step="0.01"
-                      placeholder="Enter amount"
-                      className="font-montserrat"
-                      value={customAmount}
-                      onChange={(e) => {
-                        setCustomAmount(e.target.value);
-                        setSelectedAmount(null);
-                      }}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-name" className="font-montserrat">Full Name</Label>
-                    <Input
-                      id="mobile-name"
-                      name="name"
-                      type="text"
-                      placeholder="Your name"
-                      className="font-montserrat"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-email" className="font-montserrat">Email</Label>
-                    <Input
-                      id="mobile-email"
-                      name="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      className="font-montserrat"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile-message" className="font-montserrat">Message (Optional)</Label>
-                    <Textarea
-                      id="mobile-message"
-                      name="message"
-                      placeholder="Any special dedication or message"
-                      className="font-montserrat"
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full font-montserrat font-semibold"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? "Processing..." : "Continue to Payment"}
-                  </Button>
-                </form>
               </DialogContent>
             </Dialog>
           </div>
