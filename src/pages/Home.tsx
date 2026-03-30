@@ -1,106 +1,181 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart, Calendar, Users, Award, TrendingUp, Sparkles } from "lucide-react";
+import { Heart, Calendar, Users, Award, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import logo from "@/assets/logo.png";
+
+const AnimatedCounter = ({ target, suffix = "" }: { target: number; suffix?: string }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          const duration = 1800;
+          const steps = 60;
+          const increment = target / steps;
+          let current = 0;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              setCount(target);
+              clearInterval(timer);
+            } else {
+              setCount(Math.floor(current));
+            }
+          }, duration / steps);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <div ref={ref} className="font-oswald text-5xl md:text-7xl font-black text-primary">
+      {count}{suffix}
+    </div>
+  );
+};
 
 const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-        {/* Subtle Background Pattern */}
-        <div className="absolute inset-0 overflow-hidden opacity-[0.02]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--foreground)) 1px, transparent 0)`,
-            backgroundSize: '48px 48px'
-          }}></div>
-        </div>
+      <section className="relative min-h-screen flex items-end overflow-hidden bg-foreground">
+        {/* Large diagonal scarlet block */}
+        <div
+          className="absolute top-0 right-0 w-[55%] h-full bg-primary origin-top-right"
+          style={{ clipPath: "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)" }}
+        />
 
-        {/* Accent Shape - Top Right */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        
-        {/* Accent Shape - Bottom Left */}
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        {/* Texture overlay on scarlet */}
+        <div className="absolute inset-0 opacity-[0.06] mix-blend-overlay" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
 
-        <div className="container mx-auto px-4 py-20 relative z-10">
-          <div className="max-w-6xl mx-auto">
-            {/* Main Content */}
-            <div className="text-center space-y-12">
-              {/* OSU Badge */}
-              <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-muted border border-border">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="font-montserrat text-sm font-medium text-foreground">
+        {/* Horizontal accent lines */}
+        <div className="absolute top-[20%] left-0 w-full h-px bg-primary-foreground/10" />
+        <div className="absolute top-[40%] left-0 w-full h-px bg-primary-foreground/5" />
+        <div className="absolute top-[70%] left-0 w-full h-px bg-primary-foreground/10" />
+
+        <div className="container mx-auto px-6 md:px-12 pb-20 pt-32 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-end">
+            {/* Left column — main text */}
+            <div className="space-y-8">
+              {/* Chapter tag */}
+              <div
+                className="opacity-0 animate-hero-slide-right"
+                style={{ animationDelay: "0.2s" }}
+              >
+                <span className="inline-block font-montserrat text-xs font-bold tracking-[0.3em] uppercase text-primary px-0 py-1 border-l-2 border-primary pl-3">
                   The Ohio State University Chapter
                 </span>
               </div>
 
-              {/* Main Heading */}
-              <div className="space-y-6">
-                <h1 className="font-oswald text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tight">
-                  <span className="block text-foreground">
-                    Empowering Athletes.
-                  </span>
-                  <span className="block text-primary mt-2">
+              {/* Heading */}
+              <div className="space-y-1">
+                <div className="overflow-hidden">
+                  <h1
+                    className="font-oswald text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
+                    style={{ animationDelay: "0.4s" }}
+                  >
+                    EMPOWERING
+                  </h1>
+                </div>
+                <div className="overflow-hidden">
+                  <h1
+                    className="font-oswald text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
+                    style={{ animationDelay: "0.55s" }}
+                  >
+                    ATHLETES.
+                  </h1>
+                </div>
+                <div className="overflow-hidden">
+                  <p
+                    className="font-oswald text-3xl sm:text-4xl md:text-5xl font-light text-primary-foreground/60 mt-4 opacity-0 animate-hero-slide-up"
+                    style={{ animationDelay: "0.7s" }}
+                  >
                     Celebrating Ability.
-                  </span>
-                </h1>
-                
-                <p className="font-montserrat text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                  Building an inclusive community through sports.
-                </p>
+                  </p>
+                </div>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+              {/* Subtext */}
+              <p
+                className="font-montserrat text-base md:text-lg text-primary-foreground/50 max-w-md leading-relaxed opacity-0 animate-hero-slide-up"
+                style={{ animationDelay: "0.85s" }}
+              >
+                Building an inclusive community through sports, one athlete at a time.
+              </p>
+
+              {/* CTA */}
+              <div
+                className="flex flex-wrap gap-4 opacity-0 animate-hero-slide-up"
+                style={{ animationDelay: "1s" }}
+              >
                 <Link to="/get-involved">
                   <Button
                     size="lg"
-                    className="font-montserrat font-semibold text-lg px-10 py-7 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-
+                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 group"
+                  >
                     Get Involved
-                    <Heart className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link to="/events">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="font-montserrat font-semibold text-lg px-10 py-7 border-2 transition-all duration-300 hover:scale-105">
-
+                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 transition-all duration-300"
+                  >
                     <Calendar className="mr-2 h-5 w-5" />
                     View Events
                   </Button>
                 </Link>
               </div>
+            </div>
 
-              {/* Impact Stats */}
-              <div className="grid grid-cols-3 gap-8 pt-16 max-w-4xl mx-auto">
-                <div className="space-y-2 group">
-                  <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">150+
-
+            {/* Right column — stats strip */}
+            <div
+              className="opacity-0 animate-hero-scale"
+              style={{ animationDelay: "1.1s" }}
+            >
+              <div className="grid grid-cols-3 gap-0 border border-primary-foreground/10">
+                {[
+                  { value: 150, suffix: "+", label: "Volunteers" },
+                  { value: 300, suffix: "+", label: "Athletes" },
+                  { value: 100, suffix: "+", label: "Events / Year" },
+                ].map((stat, i) => (
+                  <div
+                    key={stat.label}
+                    className={`p-6 md:p-8 text-center ${
+                      i < 2 ? "border-r border-primary-foreground/10" : ""
+                    }`}
+                  >
+                    <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                    <div className="font-montserrat text-xs md:text-sm font-semibold text-primary-foreground/40 uppercase tracking-wider mt-2">
+                      {stat.label}
+                    </div>
                   </div>
-                  <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
-                    Volunteers
-                  </div>
-                </div>
-                <div className="space-y-2 group">
-                  <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">300+
-
-                  </div>
-                  <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
-                    Athletes
-                  </div>
-                </div>
-                <div className="space-y-2 group">
-                  <div className="font-oswald text-5xl md:text-6xl font-black text-primary group-hover:scale-110 transition-transform duration-300">
-                    100+
-                  </div>
-                  <div className="font-montserrat text-sm md:text-base font-semibold text-muted-foreground uppercase tracking-wider">
-                    Events/Year
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
+          </div>
+
+          {/* Bottom scroll indicator */}
+          <div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 animate-hero-slide-up"
+            style={{ animationDelay: "1.4s" }}
+          >
+            <span className="font-montserrat text-[10px] uppercase tracking-[0.25em] text-primary-foreground/30">
+              Scroll
+            </span>
+            <div className="w-px h-8 bg-gradient-to-b from-primary-foreground/30 to-transparent" />
           </div>
         </div>
       </section>
