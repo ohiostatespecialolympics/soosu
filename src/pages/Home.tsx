@@ -121,7 +121,7 @@ const Home = () => {
                 <Link to="/get-involved">
                   <Button
                     size="lg"
-                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 group"
+                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 group border-2 border-primary"
                   >
                     Get Involved
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -131,7 +131,7 @@ const Home = () => {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 transition-all duration-300"
+                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none border-2 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground transition-all duration-300"
                   >
                     <Calendar className="mr-2 h-5 w-5" />
                     View Events
@@ -145,7 +145,7 @@ const Home = () => {
               className="opacity-0 animate-hero-scale"
               style={{ animationDelay: "1.1s" }}
             >
-              <div className="grid grid-cols-3 gap-0 border border-primary-foreground/10">
+              <div className="grid grid-cols-3 gap-0 border border-primary-foreground/20 bg-primary-foreground/5 backdrop-blur-sm">
                 {[
                   { value: 150, suffix: "+", label: "Volunteers" },
                   { value: 300, suffix: "+", label: "Athletes" },
@@ -154,11 +154,11 @@ const Home = () => {
                   <div
                     key={stat.label}
                     className={`p-6 md:p-8 text-center ${
-                      i < 2 ? "border-r border-primary-foreground/10" : ""
+                      i < 2 ? "border-r border-primary-foreground/20" : ""
                     }`}
                   >
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                    <div className="font-montserrat text-xs md:text-sm font-semibold text-primary-foreground/40 uppercase tracking-wider mt-2">
+                    <div className="font-montserrat text-xs md:text-sm font-semibold text-primary-foreground/70 uppercase tracking-wider mt-2">
                       {stat.label}
                     </div>
                   </div>
@@ -172,10 +172,13 @@ const Home = () => {
             className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 animate-hero-slide-up"
             style={{ animationDelay: "1.4s" }}
           >
-            <span className="font-montserrat text-[10px] uppercase tracking-[0.25em] text-primary-foreground/30">
+            <span className="font-montserrat text-[10px] uppercase tracking-[0.25em] text-primary-foreground/40">
               Scroll
             </span>
-            <div className="w-px h-8 bg-gradient-to-b from-primary-foreground/30 to-transparent" />
+            <div className="relative w-px h-10 bg-primary-foreground/20">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-4 bg-primary-foreground/60 animate-[hero-slide-up_1.2s_ease-in-out_infinite]" />
+            </div>
+            <ArrowRight className="h-3 w-3 text-primary-foreground/40 rotate-90" />
           </div>
         </div>
       </section>
