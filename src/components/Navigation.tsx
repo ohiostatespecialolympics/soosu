@@ -2,8 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Heart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,66 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import logo from "@/assets/logo.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [customAmount, setCustomAmount] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
   const location = useLocation();
-  const { toast } = useToast();
-
-  const presetAmounts = [25, 50, 100, 250];
-
-  const handleDonation = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsProcessing(true);
-
-    const formData = new FormData(e.currentTarget);
-    const amount = selectedAmount || parseFloat(customAmount);
-    const email = formData.get("email") as string;
-    const name = formData.get("name") as string;
-    const message = formData.get("message") as string;
-
-    if (!amount || amount < 1) {
-      toast({
-        title: "Invalid amount",
-        description: "Please select or enter a donation amount",
-        variant: "destructive",
-      });
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke("create-donation", {
-        body: { amount, email, name, message },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, "_blank");
-        setDonateOpen(false);
-        setSelectedAmount(null);
-        setCustomAmount("");
-      }
-    } catch (error) {
-      console.error("Donation error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to process donation. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const navigationStructure = [
     { to: "/", label: "Home" },
