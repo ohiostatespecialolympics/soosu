@@ -145,7 +145,7 @@ const Home = () => {
               className="opacity-0 animate-hero-scale"
               style={{ animationDelay: "1.1s" }}
             >
-              <div className="grid grid-cols-3 gap-0 border border-primary-foreground/10">
+              <div className="grid grid-cols-3 gap-0 border border-primary-foreground/20 bg-primary-foreground/5 backdrop-blur-sm">
                 {[
                   { value: 150, suffix: "+", label: "Volunteers" },
                   { value: 300, suffix: "+", label: "Athletes" },
@@ -154,11 +154,11 @@ const Home = () => {
                   <div
                     key={stat.label}
                     className={`p-6 md:p-8 text-center ${
-                      i < 2 ? "border-r border-primary-foreground/10" : ""
+                      i < 2 ? "border-r border-primary-foreground/20" : ""
                     }`}
                   >
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                    <div className="font-montserrat text-xs md:text-sm font-semibold text-primary-foreground/40 uppercase tracking-wider mt-2">
+                    <div className="font-montserrat text-xs md:text-sm font-semibold text-primary-foreground/70 uppercase tracking-wider mt-2">
                       {stat.label}
                     </div>
                   </div>
