@@ -169,15 +169,12 @@ const Home = () => {
 
           {/* Bottom scroll indicator */}
           <div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 animate-hero-slide-up"
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-0 animate-hero-slide-up"
             style={{ animationDelay: "1.4s" }}
           >
             <span className="font-montserrat text-[10px] uppercase tracking-[0.25em] text-primary-foreground/40">
               Scroll
             </span>
-            <div className="relative w-px h-10 bg-primary-foreground/20">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-4 bg-primary-foreground/60 animate-[hero-slide-up_1.2s_ease-in-out_infinite]" />
-            </div>
             <ArrowRight className="h-3 w-3 text-primary-foreground/40 rotate-90" />
           </div>
         </div>
