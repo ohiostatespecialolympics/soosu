@@ -127,11 +127,11 @@ const Home = () => {
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/events">
+                <Link to="/events" className="bg-primary-foreground text-secondary-foreground rounded-md">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none border-2 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground transition-all duration-300"
+                    className="font-montserrat font-bold text-base px-8 py-7 rounded-none border-2 border-primary-foreground/50 hover:bg-primary-foreground/10 hover:border-primary-foreground transition-all duration-300 text-secondary-foreground"
                   >
                     <Calendar className="mr-2 h-5 w-5" />
                     View Events
