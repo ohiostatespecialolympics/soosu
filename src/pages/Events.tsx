@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -236,91 +237,90 @@ const Events = () => {
             <TabsTrigger value="upcoming" className="font-montserrat">Events</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upcoming" className="space-y-8">
-            {/* Search and View Mode Controls */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative w-full md:w-96">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search events..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 font-montserrat"
-                />
-              </div>
-              
-              <div className="flex gap-2 flex-wrap justify-center">
-                <Button 
-                  variant="outline" 
-                  className="gap-2 font-montserrat"
-                  onClick={() => setSubscribeDialogOpen(true)}
-                >
-                  <Plus className="h-4 w-4" />
-                  Subscribe to Calendar
-                </Button>
-                <Button
-                  variant={viewMode === "month" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("month")}
-                  className="font-montserrat"
-                >
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  Month
-                </Button>
-                <Button
-                  variant={viewMode === "week" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("week")}
-                  className="font-montserrat"
-                >
-                  <Grid3x3 className="h-4 w-4 mr-2" />
-                  Week
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className="font-montserrat"
-                >
-                  <List className="h-4 w-4 mr-2" />
-                  List
-                </Button>
-              </div>
-            </div>
+          <TabsContent value="upcoming" className="space-y-6">
+            {/* Unified Controls Bar */}
+            <div className="rounded-lg border bg-card p-4 space-y-4">
+              {/* Top row: Search + Subscribe + View toggles */}
+              <div className="flex flex-col md:flex-row gap-3 items-center">
+                <div className="relative w-full md:flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search events..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 font-montserrat"
+                  />
+                </div>
 
-            {/* Filter buttons */}
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Button
-                variant={filter === "all" ? "default" : "outline"}
-                onClick={() => setFilter("all")}
-                className="font-montserrat"
-              >
-                All Events
-              </Button>
-              <Button
-                variant={filter === "sports" ? "default" : "outline"}
-                onClick={() => setFilter("sports")}
-                className="font-montserrat"
-              >
-                <span className={`w-2 h-2 rounded-full ${getCategoryColor("sports")} mr-2`}></span>
-                Sports Events
-              </Button>
-              <Button
-                variant={filter === "volunteer" ? "default" : "outline"}
-                onClick={() => setFilter("volunteer")}
-                className="font-montserrat"
-              >
-                <span className={`w-2 h-2 rounded-full ${getCategoryColor("volunteer")} mr-2`}></span>
-                Volunteer Opportunities
-              </Button>
-              <Button
-                variant={filter === "fundraiser" ? "default" : "outline"}
-                onClick={() => setFilter("fundraiser")}
-                className="font-montserrat"
-              >
-                <span className={`w-2 h-2 rounded-full ${getCategoryColor("fundraiser")} mr-2`}></span>
-                Fundraisers
-              </Button>
+                <div className="flex items-center gap-2">
+                  {/* View mode toggle group */}
+                  <div className="flex items-center rounded-md border bg-muted p-0.5">
+                    <Button
+                      variant={viewMode === "month" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("month")}
+                      className="font-montserrat h-8 px-3 rounded-sm"
+                    >
+                      <CalendarIcon className="h-4 w-4 md:mr-1.5" />
+                      <span className="hidden md:inline">Month</span>
+                    </Button>
+                    <Button
+                      variant={viewMode === "week" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("week")}
+                      className="font-montserrat h-8 px-3 rounded-sm"
+                    >
+                      <Grid3x3 className="h-4 w-4 md:mr-1.5" />
+                      <span className="hidden md:inline">Week</span>
+                    </Button>
+                    <Button
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="font-montserrat h-8 px-3 rounded-sm"
+                    >
+                      <List className="h-4 w-4 md:mr-1.5" />
+                      <span className="hidden md:inline">List</span>
+                    </Button>
+                  </div>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="gap-1.5 font-montserrat h-8 whitespace-nowrap"
+                    onClick={() => setSubscribeDialogOpen(true)}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Subscribe
+                  </Button>
+                </div>
+              </div>
+
+              {/* Filter chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { key: "all", label: "All" },
+                  { key: "sports", label: "Sports" },
+                  { key: "volunteer", label: "Volunteer" },
+                  { key: "fundraiser", label: "Fundraiser" },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setFilter(key)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-montserrat font-medium transition-colors",
+                      filter === key
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    {key !== "all" && (
+                      <span className={`w-2 h-2 rounded-full ${getCategoryColor(key)}`} />
+                    )}
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Calendar View */}
