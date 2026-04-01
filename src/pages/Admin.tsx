@@ -568,6 +568,29 @@ export default function Admin() {
                 </Button>
               </div>
 
+              {/* Bulk action bar */}
+              {selectedEventIds.size > 0 && (
+                <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <CheckSquare className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-sm font-medium">
+                    {selectedEventIds.size} event{selectedEventIds.size > 1 ? "s" : ""} selected
+                  </span>
+                  <div className="flex-1" />
+                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
+                    setBulkEditData({ event_date: "", location: "", event_type: "" });
+                    setBulkEditDialogOpen(true);
+                  }}>
+                    <Pencil className="h-3 w-3 mr-1" /> Edit
+                  </Button>
+                  <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => setBulkDeleteConfirmOpen(true)}>
+                    <Trash2 className="h-3 w-3 mr-1" /> Delete
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelectedEventIds(new Set())}>
+                    Clear
+                  </Button>
+                </div>
+              )}
+
               {events.length === 0 ? (
                 <div className="bg-background border border-dashed border-border rounded-lg p-12 text-center">
                   <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
@@ -575,54 +598,72 @@ export default function Admin() {
                   <Button size="sm" onClick={() => setEventDialogOpen(true)}><Plus className="h-3 w-3 mr-1" /> Add Event</Button>
                 </div>
               ) : (
-                <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
-                  {events.map(event => (
-                    <div key={event.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
-                      <div className="text-center min-w-[44px] shrink-0">
-                        <div className="text-[10px] text-muted-foreground uppercase font-medium">
-                          {format(new Date(event.event_date + "T00:00:00"), "MMM")}
+                <div className="bg-background border border-border rounded-lg overflow-hidden">
+                  {/* Select all header */}
+                  <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center gap-4">
+                    <Checkbox
+                      checked={selectedEventIds.size === events.length && events.length > 0}
+                      onCheckedChange={toggleSelectAllEvents}
+                      aria-label="Select all events"
+                    />
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {selectedEventIds.size === events.length && events.length > 0 ? "Deselect all" : "Select all"}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {events.map(event => (
+                      <div key={event.id} className={`px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors ${selectedEventIds.has(event.id) ? "bg-primary/5" : ""}`}>
+                        <Checkbox
+                          checked={selectedEventIds.has(event.id)}
+                          onCheckedChange={() => toggleEventSelection(event.id)}
+                          aria-label={`Select ${event.title}`}
+                        />
+                        <div className="text-center min-w-[44px] shrink-0">
+                          <div className="text-[10px] text-muted-foreground uppercase font-medium">
+                            {format(new Date(event.event_date + "T00:00:00"), "MMM")}
+                          </div>
+                          <div className="text-base font-bold leading-tight">
+                            {format(new Date(event.event_date + "T00:00:00"), "d")}
+                          </div>
                         </div>
-                        <div className="text-base font-bold leading-tight">
-                          {format(new Date(event.event_date + "T00:00:00"), "d")}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{event.title}</p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            {event.start_time && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" />{event.start_time.slice(0, 5)}
+                              </span>
+                            )}
+                            {event.location && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                                <MapPin className="h-3 w-3 shrink-0" />{event.location}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {event.event_type && (
+                          <Badge variant="secondary" className="text-xs shrink-0 hidden sm:flex">{event.event_type}</Badge>
+                        )}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
+                            setEditingEvent(event);
+                            setEventFormData({
+                              title: event.title, description: event.description || "",
+                              event_date: event.event_date, start_time: event.start_time || "",
+                              end_time: event.end_time || "", location: event.location || "",
+                              event_type: event.event_type || "",
+                            });
+                            setEventDialogOpen(true);
+                          }}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteEvent(event.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{event.title}</p>
-                        <div className="flex items-center gap-3 mt-0.5">
-                          {event.start_time && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-3 w-3" />{event.start_time.slice(0, 5)}
-                            </span>
-                          )}
-                          {event.location && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                              <MapPin className="h-3 w-3 shrink-0" />{event.location}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {event.event_type && (
-                        <Badge variant="secondary" className="text-xs shrink-0 hidden sm:flex">{event.event_type}</Badge>
-                      )}
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
-                          setEditingEvent(event);
-                          setEventFormData({
-                            title: event.title, description: event.description || "",
-                            event_date: event.event_date, start_time: event.start_time || "",
-                            end_time: event.end_time || "", location: event.location || "",
-                            event_type: event.event_type || "",
-                          });
-                          setEventDialogOpen(true);
-                        }}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteEvent(event.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
