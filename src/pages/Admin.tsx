@@ -12,8 +12,10 @@ import { User } from "@supabase/supabase-js";
 import {
   Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Upload,
   X, Repeat, CalendarPlus, LayoutDashboard, Users, Trophy, Star, ChevronRight,
-  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck
+  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck, CheckSquare
 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
