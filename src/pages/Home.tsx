@@ -145,7 +145,7 @@ const Home = () => {
               className="opacity-0 animate-hero-scale"
               style={{ animationDelay: "1.1s" }}
             >
-              <div className="grid grid-cols-3 gap-0 border border-primary-foreground/20 bg-primary-foreground/5 backdrop-blur-sm">
+              <div className="grid grid-cols-3 gap-0">
                 {[
                   { value: 150, suffix: "+", label: "Volunteers" },
                   { value: 300, suffix: "+", label: "Athletes" },
