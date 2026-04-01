@@ -12,8 +12,10 @@ import { User } from "@supabase/supabase-js";
 import {
   Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Upload,
   X, Repeat, CalendarPlus, LayoutDashboard, Users, Trophy, Star, ChevronRight,
-  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck
+  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck, CheckSquare
 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +128,60 @@ export default function Admin() {
   const [sponsorFormData, setSponsorFormData] = useState({
     name: "", logo_url: "", website_url: "", tier: "bronze", display_order: 0,
   });
+
+  // Bulk event management
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [bulkEditDialogOpen, setBulkEditDialogOpen] = useState(false);
+  const [bulkEditData, setBulkEditData] = useState({ event_date: "", location: "", event_type: "" });
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkEditing, setBulkEditing] = useState(false);
+
+  const toggleEventSelection = (id: string) => {
+    setSelectedEventIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllEvents = () => {
+    if (selectedEventIds.size === events.length) {
+      setSelectedEventIds(new Set());
+    } else {
+      setSelectedEventIds(new Set(events.map(e => e.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    const ids = Array.from(selectedEventIds);
+    const { error } = await supabase.from("events").delete().in("id", ids);
+    setBulkDeleting(false);
+    setBulkDeleteConfirmOpen(false);
+    if (error) { toast({ title: "Error", description: "Failed to delete events.", variant: "destructive" }); return; }
+    toast({ title: `${ids.length} event${ids.length > 1 ? "s" : ""} deleted` });
+    setSelectedEventIds(new Set());
+    fetchEvents();
+  };
+
+  const handleBulkEdit = async () => {
+    setBulkEditing(true);
+    const ids = Array.from(selectedEventIds);
+    const updates: Record<string, string> = {};
+    if (bulkEditData.event_date) updates.event_date = bulkEditData.event_date;
+    if (bulkEditData.location) updates.location = bulkEditData.location;
+    if (bulkEditData.event_type) updates.event_type = bulkEditData.event_type;
+    if (Object.keys(updates).length === 0) { setBulkEditing(false); setBulkEditDialogOpen(false); return; }
+    const { error } = await supabase.from("events").update(updates).in("id", ids);
+    setBulkEditing(false);
+    setBulkEditDialogOpen(false);
+    if (error) { toast({ title: "Error", description: "Failed to update events.", variant: "destructive" }); return; }
+    toast({ title: `${ids.length} event${ids.length > 1 ? "s" : ""} updated` });
+    setSelectedEventIds(new Set());
+    setBulkEditData({ event_date: "", location: "", event_type: "" });
+    fetchEvents();
+  };
 
   useEffect(() => {
     checkAuth();
@@ -512,6 +568,29 @@ export default function Admin() {
                 </Button>
               </div>
 
+              {/* Bulk action bar */}
+              {selectedEventIds.size > 0 && (
+                <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg px-4 py-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <CheckSquare className="h-4 w-4 text-primary shrink-0" />
+                  <span className="text-sm font-medium">
+                    {selectedEventIds.size} event{selectedEventIds.size > 1 ? "s" : ""} selected
+                  </span>
+                  <div className="flex-1" />
+                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => {
+                    setBulkEditData({ event_date: "", location: "", event_type: "" });
+                    setBulkEditDialogOpen(true);
+                  }}>
+                    <Pencil className="h-3 w-3 mr-1" /> Edit
+                  </Button>
+                  <Button size="sm" variant="destructive" className="h-7 text-xs" onClick={() => setBulkDeleteConfirmOpen(true)}>
+                    <Trash2 className="h-3 w-3 mr-1" /> Delete
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelectedEventIds(new Set())}>
+                    Clear
+                  </Button>
+                </div>
+              )}
+
               {events.length === 0 ? (
                 <div className="bg-background border border-dashed border-border rounded-lg p-12 text-center">
                   <Calendar className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
@@ -519,54 +598,72 @@ export default function Admin() {
                   <Button size="sm" onClick={() => setEventDialogOpen(true)}><Plus className="h-3 w-3 mr-1" /> Add Event</Button>
                 </div>
               ) : (
-                <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
-                  {events.map(event => (
-                    <div key={event.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
-                      <div className="text-center min-w-[44px] shrink-0">
-                        <div className="text-[10px] text-muted-foreground uppercase font-medium">
-                          {format(new Date(event.event_date + "T00:00:00"), "MMM")}
+                <div className="bg-background border border-border rounded-lg overflow-hidden">
+                  {/* Select all header */}
+                  <div className="px-4 py-2 border-b border-border bg-muted/30 flex items-center gap-4">
+                    <Checkbox
+                      checked={selectedEventIds.size === events.length && events.length > 0}
+                      onCheckedChange={toggleSelectAllEvents}
+                      aria-label="Select all events"
+                    />
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {selectedEventIds.size === events.length && events.length > 0 ? "Deselect all" : "Select all"}
+                    </span>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {events.map(event => (
+                      <div key={event.id} className={`px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors ${selectedEventIds.has(event.id) ? "bg-primary/5" : ""}`}>
+                        <Checkbox
+                          checked={selectedEventIds.has(event.id)}
+                          onCheckedChange={() => toggleEventSelection(event.id)}
+                          aria-label={`Select ${event.title}`}
+                        />
+                        <div className="text-center min-w-[44px] shrink-0">
+                          <div className="text-[10px] text-muted-foreground uppercase font-medium">
+                            {format(new Date(event.event_date + "T00:00:00"), "MMM")}
+                          </div>
+                          <div className="text-base font-bold leading-tight">
+                            {format(new Date(event.event_date + "T00:00:00"), "d")}
+                          </div>
                         </div>
-                        <div className="text-base font-bold leading-tight">
-                          {format(new Date(event.event_date + "T00:00:00"), "d")}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{event.title}</p>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            {event.start_time && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" />{event.start_time.slice(0, 5)}
+                              </span>
+                            )}
+                            {event.location && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                                <MapPin className="h-3 w-3 shrink-0" />{event.location}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {event.event_type && (
+                          <Badge variant="secondary" className="text-xs shrink-0 hidden sm:flex">{event.event_type}</Badge>
+                        )}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
+                            setEditingEvent(event);
+                            setEventFormData({
+                              title: event.title, description: event.description || "",
+                              event_date: event.event_date, start_time: event.start_time || "",
+                              end_time: event.end_time || "", location: event.location || "",
+                              event_type: event.event_type || "",
+                            });
+                            setEventDialogOpen(true);
+                          }}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteEvent(event.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{event.title}</p>
-                        <div className="flex items-center gap-3 mt-0.5">
-                          {event.start_time && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-3 w-3" />{event.start_time.slice(0, 5)}
-                            </span>
-                          )}
-                          {event.location && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                              <MapPin className="h-3 w-3 shrink-0" />{event.location}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {event.event_type && (
-                        <Badge variant="secondary" className="text-xs shrink-0 hidden sm:flex">{event.event_type}</Badge>
-                      )}
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
-                          setEditingEvent(event);
-                          setEventFormData({
-                            title: event.title, description: event.description || "",
-                            event_date: event.event_date, start_time: event.start_time || "",
-                            end_time: event.end_time || "", location: event.location || "",
-                            event_type: event.event_type || "",
-                          });
-                          setEventDialogOpen(true);
-                        }}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteEvent(event.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -1094,6 +1191,63 @@ export default function Admin() {
               <Button type="submit" size="sm">{editingSponsor ? "Save Changes" : "Add Sponsor"}</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── BULK DELETE CONFIRMATION ── */}
+      <AlertDialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedEventIds.size} event{selectedEventIds.size > 1 ? "s" : ""}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove {selectedEventIds.size} selected event{selectedEventIds.size > 1 ? "s" : ""}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} disabled={bulkDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {bulkDeleting ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Deleting…</> : `Delete ${selectedEventIds.size} event${selectedEventIds.size > 1 ? "s" : ""}`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── BULK EDIT DIALOG ── */}
+      <Dialog open={bulkEditDialogOpen} onOpenChange={(open) => { setBulkEditDialogOpen(open); if (!open) setBulkEditData({ event_date: "", location: "", event_type: "" }); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Edit {selectedEventIds.size} event{selectedEventIds.size > 1 ? "s" : ""}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">Only filled fields will be updated. Leave blank to keep existing values.</p>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Date</Label>
+              <Input type="date" value={bulkEditData.event_date}
+                onChange={e => setBulkEditData({ ...bulkEditData, event_date: e.target.value })}
+                className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Location</Label>
+              <Input value={bulkEditData.location}
+                onChange={e => setBulkEditData({ ...bulkEditData, location: e.target.value })}
+                placeholder="New location for all selected" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Type</Label>
+              <Select value={bulkEditData.event_type} onValueChange={v => setBulkEditData({ ...bulkEditData, event_type: v })}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>
+                  {EVENT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setBulkEditDialogOpen(false)}>Cancel</Button>
+              <Button size="sm" onClick={handleBulkEdit} disabled={bulkEditing || (!bulkEditData.event_date && !bulkEditData.location && !bulkEditData.event_type)}>
+                {bulkEditing ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Updating…</> : "Apply Changes"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
