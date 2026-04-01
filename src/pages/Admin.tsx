@@ -129,6 +129,60 @@ export default function Admin() {
     name: "", logo_url: "", website_url: "", tier: "bronze", display_order: 0,
   });
 
+  // Bulk event management
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [bulkEditDialogOpen, setBulkEditDialogOpen] = useState(false);
+  const [bulkEditData, setBulkEditData] = useState({ event_date: "", location: "", event_type: "" });
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkEditing, setBulkEditing] = useState(false);
+
+  const toggleEventSelection = (id: string) => {
+    setSelectedEventIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllEvents = () => {
+    if (selectedEventIds.size === events.length) {
+      setSelectedEventIds(new Set());
+    } else {
+      setSelectedEventIds(new Set(events.map(e => e.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    const ids = Array.from(selectedEventIds);
+    const { error } = await supabase.from("events").delete().in("id", ids);
+    setBulkDeleting(false);
+    setBulkDeleteConfirmOpen(false);
+    if (error) { toast({ title: "Error", description: "Failed to delete events.", variant: "destructive" }); return; }
+    toast({ title: `${ids.length} event${ids.length > 1 ? "s" : ""} deleted` });
+    setSelectedEventIds(new Set());
+    fetchEvents();
+  };
+
+  const handleBulkEdit = async () => {
+    setBulkEditing(true);
+    const ids = Array.from(selectedEventIds);
+    const updates: Record<string, string> = {};
+    if (bulkEditData.event_date) updates.event_date = bulkEditData.event_date;
+    if (bulkEditData.location) updates.location = bulkEditData.location;
+    if (bulkEditData.event_type) updates.event_type = bulkEditData.event_type;
+    if (Object.keys(updates).length === 0) { setBulkEditing(false); setBulkEditDialogOpen(false); return; }
+    const { error } = await supabase.from("events").update(updates).in("id", ids);
+    setBulkEditing(false);
+    setBulkEditDialogOpen(false);
+    if (error) { toast({ title: "Error", description: "Failed to update events.", variant: "destructive" }); return; }
+    toast({ title: `${ids.length} event${ids.length > 1 ? "s" : ""} updated` });
+    setSelectedEventIds(new Set());
+    setBulkEditData({ event_date: "", location: "", event_type: "" });
+    fetchEvents();
+  };
+
   useEffect(() => {
     checkAuth();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
