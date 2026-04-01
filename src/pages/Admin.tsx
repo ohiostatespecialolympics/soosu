@@ -1193,6 +1193,63 @@ export default function Admin() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* ── BULK DELETE CONFIRMATION ── */}
+      <AlertDialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedEventIds.size} event{selectedEventIds.size > 1 ? "s" : ""}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove {selectedEventIds.size} selected event{selectedEventIds.size > 1 ? "s" : ""}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} disabled={bulkDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {bulkDeleting ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Deleting…</> : `Delete ${selectedEventIds.size} event${selectedEventIds.size > 1 ? "s" : ""}`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ── BULK EDIT DIALOG ── */}
+      <Dialog open={bulkEditDialogOpen} onOpenChange={(open) => { setBulkEditDialogOpen(open); if (!open) setBulkEditData({ event_date: "", location: "", event_type: "" }); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Edit {selectedEventIds.size} event{selectedEventIds.size > 1 ? "s" : ""}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">Only filled fields will be updated. Leave blank to keep existing values.</p>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label className="text-xs text-muted-foreground">Date</Label>
+              <Input type="date" value={bulkEditData.event_date}
+                onChange={e => setBulkEditData({ ...bulkEditData, event_date: e.target.value })}
+                className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Location</Label>
+              <Input value={bulkEditData.location}
+                onChange={e => setBulkEditData({ ...bulkEditData, location: e.target.value })}
+                placeholder="New location for all selected" className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Type</Label>
+              <Select value={bulkEditData.event_type} onValueChange={v => setBulkEditData({ ...bulkEditData, event_type: v })}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>
+                  {EVENT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setBulkEditDialogOpen(false)}>Cancel</Button>
+              <Button size="sm" onClick={handleBulkEdit} disabled={bulkEditing || (!bulkEditData.event_date && !bulkEditData.location && !bulkEditData.event_type)}>
+                {bulkEditing ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Updating…</> : "Apply Changes"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
