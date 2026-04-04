@@ -843,7 +843,7 @@ export default function Admin() {
                   ) : (
                     <div className="space-y-2">
                       {users.map(u => (
-                        <div key={u.id} className="flex items-center gap-3 p-2 rounded-md bg-muted/30">
+                        <div key={u.id} className="flex items-center gap-3 p-2 rounded-md bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => { navigator.clipboard.writeText(u.id); toast({ title: "User ID copied", description: u.id }); }}>
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                             <Users className="h-3.5 w-3.5 text-primary" />
                           </div>
