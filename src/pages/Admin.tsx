@@ -355,7 +355,12 @@ export default function Admin() {
       if (!url) return;
       imageUrl = url;
     }
-    const data = { ...leadershipFormData, image_url: imageUrl };
+    const nextOrder = editingLeadership
+      ? leadershipFormData.display_order
+      : (leadershipMembers.length > 0
+          ? Math.max(...leadershipMembers.map(m => m.display_order)) + 1
+          : 1);
+    const data = { ...leadershipFormData, image_url: imageUrl, display_order: nextOrder };
     const { error } = editingLeadership
       ? await supabase.from("leadership_members").update(data).eq("id", editingLeadership.id)
       : await supabase.from("leadership_members").insert([data]);
