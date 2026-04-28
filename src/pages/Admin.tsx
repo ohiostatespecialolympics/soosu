@@ -137,6 +137,44 @@ export default function Admin() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkEditing, setBulkEditing] = useState(false);
 
+  // Leadership drag-and-drop reordering
+  const [draggedLeadershipId, setDraggedLeadershipId] = useState<string | null>(null);
+  const [dragOverLeadershipId, setDragOverLeadershipId] = useState<string | null>(null);
+
+  const persistLeadershipOrder = async (ordered: LeadershipMember[]) => {
+    const results = await Promise.all(
+      ordered.map((m, idx) =>
+        supabase.from("leadership_members").update({ display_order: idx + 1 }).eq("id", m.id)
+      )
+    );
+    const failed = results.find(r => r.error);
+    if (failed?.error) {
+      toast({ title: "Error", description: "Failed to save new order.", variant: "destructive" });
+      fetchLeadershipMembers();
+    } else {
+      toast({ title: "Order updated" });
+    }
+  };
+
+  const handleLeadershipDrop = (targetId: string) => {
+    if (!draggedLeadershipId || draggedLeadershipId === targetId) {
+      setDraggedLeadershipId(null);
+      setDragOverLeadershipId(null);
+      return;
+    }
+    const current = [...leadershipMembers];
+    const fromIdx = current.findIndex(m => m.id === draggedLeadershipId);
+    const toIdx = current.findIndex(m => m.id === targetId);
+    if (fromIdx === -1 || toIdx === -1) return;
+    const [moved] = current.splice(fromIdx, 1);
+    current.splice(toIdx, 0, moved);
+    const reordered = current.map((m, idx) => ({ ...m, display_order: idx + 1 }));
+    setLeadershipMembers(reordered);
+    setDraggedLeadershipId(null);
+    setDragOverLeadershipId(null);
+    persistLeadershipOrder(reordered);
+  };
+
   const toggleEventSelection = (id: string) => {
     // (no-op marker)
     setSelectedEventIds(prev => {
