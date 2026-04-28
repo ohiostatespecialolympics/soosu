@@ -138,6 +138,7 @@ export default function Admin() {
   const [bulkEditing, setBulkEditing] = useState(false);
 
   const toggleEventSelection = (id: string) => {
+    // (no-op marker)
     setSelectedEventIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
