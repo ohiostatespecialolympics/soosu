@@ -77,7 +77,7 @@ const Leadership = () => {
                   <CardHeader>
                     <div className="flex justify-center mb-4">
                       <Avatar className="h-32 w-32">
-                        <AvatarImage src={member.image_url} alt={member.name} />
+                        <AvatarImage src={member.image_url} alt={member.name} className="object-cover" />
                         <AvatarFallback className="text-3xl font-oswald">
                           {member.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
