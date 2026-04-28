@@ -729,8 +729,28 @@ export default function Admin() {
                 </div>
               ) : (
                 <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
-                  {leadershipMembers.map(member => (
-                    <div key={member.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                  {leadershipMembers.map((member, idx) => (
+                    <div
+                      key={member.id}
+                      draggable
+                      onDragStart={() => setDraggedLeadershipId(member.id)}
+                      onDragOver={(e) => { e.preventDefault(); if (dragOverLeadershipId !== member.id) setDragOverLeadershipId(member.id); }}
+                      onDragLeave={() => { if (dragOverLeadershipId === member.id) setDragOverLeadershipId(null); }}
+                      onDrop={(e) => { e.preventDefault(); handleLeadershipDrop(member.id); }}
+                      onDragEnd={() => { setDraggedLeadershipId(null); setDragOverLeadershipId(null); }}
+                      className={`px-4 py-3 flex items-center gap-3 hover:bg-muted/30 transition-colors ${
+                        draggedLeadershipId === member.id ? "opacity-50" : ""
+                      } ${dragOverLeadershipId === member.id && draggedLeadershipId !== member.id ? "bg-accent/50 border-t-2 border-primary" : ""}`}
+                    >
+                      <button
+                        type="button"
+                        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0"
+                        aria-label="Drag to reorder"
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </button>
+                      <span className="text-xs font-medium text-muted-foreground w-5 text-center shrink-0">{idx + 1}</span>
                       {member.image_url ? (
                         <img src={member.image_url} alt={member.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-border" />
                       ) : (
@@ -742,7 +762,6 @@ export default function Admin() {
                         <p className="text-sm font-medium truncate">{member.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{member.position}</p>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">#{member.display_order}</span>
                       <div className="flex items-center gap-1 shrink-0">
                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
                           setEditingLeadership(member);
