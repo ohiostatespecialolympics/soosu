@@ -12,7 +12,7 @@ import { User } from "@supabase/supabase-js";
 import {
   Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Upload,
   X, Repeat, CalendarPlus, LayoutDashboard, Users, Trophy, Star, ChevronRight,
-  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck, CheckSquare
+  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck, CheckSquare, GripVertical
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -137,7 +137,46 @@ export default function Admin() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkEditing, setBulkEditing] = useState(false);
 
+  // Leadership drag-and-drop reordering
+  const [draggedLeadershipId, setDraggedLeadershipId] = useState<string | null>(null);
+  const [dragOverLeadershipId, setDragOverLeadershipId] = useState<string | null>(null);
+
+  const persistLeadershipOrder = async (ordered: LeadershipMember[]) => {
+    const results = await Promise.all(
+      ordered.map((m, idx) =>
+        supabase.from("leadership_members").update({ display_order: idx + 1 }).eq("id", m.id)
+      )
+    );
+    const failed = results.find(r => r.error);
+    if (failed?.error) {
+      toast({ title: "Error", description: "Failed to save new order.", variant: "destructive" });
+      fetchLeadershipMembers();
+    } else {
+      toast({ title: "Order updated" });
+    }
+  };
+
+  const handleLeadershipDrop = (targetId: string) => {
+    if (!draggedLeadershipId || draggedLeadershipId === targetId) {
+      setDraggedLeadershipId(null);
+      setDragOverLeadershipId(null);
+      return;
+    }
+    const current = [...leadershipMembers];
+    const fromIdx = current.findIndex(m => m.id === draggedLeadershipId);
+    const toIdx = current.findIndex(m => m.id === targetId);
+    if (fromIdx === -1 || toIdx === -1) return;
+    const [moved] = current.splice(fromIdx, 1);
+    current.splice(toIdx, 0, moved);
+    const reordered = current.map((m, idx) => ({ ...m, display_order: idx + 1 }));
+    setLeadershipMembers(reordered);
+    setDraggedLeadershipId(null);
+    setDragOverLeadershipId(null);
+    persistLeadershipOrder(reordered);
+  };
+
   const toggleEventSelection = (id: string) => {
+    // (no-op marker)
     setSelectedEventIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
@@ -316,7 +355,12 @@ export default function Admin() {
       if (!url) return;
       imageUrl = url;
     }
-    const data = { ...leadershipFormData, image_url: imageUrl };
+    const nextOrder = editingLeadership
+      ? leadershipFormData.display_order
+      : (leadershipMembers.length > 0
+          ? Math.max(...leadershipMembers.map(m => m.display_order)) + 1
+          : 1);
+    const data = { ...leadershipFormData, image_url: imageUrl, display_order: nextOrder };
     const { error } = editingLeadership
       ? await supabase.from("leadership_members").update(data).eq("id", editingLeadership.id)
       : await supabase.from("leadership_members").insert([data]);
@@ -690,8 +734,28 @@ export default function Admin() {
                 </div>
               ) : (
                 <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
-                  {leadershipMembers.map(member => (
-                    <div key={member.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+                  {leadershipMembers.map((member, idx) => (
+                    <div
+                      key={member.id}
+                      draggable
+                      onDragStart={() => setDraggedLeadershipId(member.id)}
+                      onDragOver={(e) => { e.preventDefault(); if (dragOverLeadershipId !== member.id) setDragOverLeadershipId(member.id); }}
+                      onDragLeave={() => { if (dragOverLeadershipId === member.id) setDragOverLeadershipId(null); }}
+                      onDrop={(e) => { e.preventDefault(); handleLeadershipDrop(member.id); }}
+                      onDragEnd={() => { setDraggedLeadershipId(null); setDragOverLeadershipId(null); }}
+                      className={`px-4 py-3 flex items-center gap-3 hover:bg-muted/30 transition-colors ${
+                        draggedLeadershipId === member.id ? "opacity-50" : ""
+                      } ${dragOverLeadershipId === member.id && draggedLeadershipId !== member.id ? "bg-accent/50 border-t-2 border-primary" : ""}`}
+                    >
+                      <button
+                        type="button"
+                        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0"
+                        aria-label="Drag to reorder"
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </button>
+                      <span className="text-xs font-medium text-muted-foreground w-5 text-center shrink-0">{idx + 1}</span>
                       {member.image_url ? (
                         <img src={member.image_url} alt={member.name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-border" />
                       ) : (
@@ -703,7 +767,6 @@ export default function Admin() {
                         <p className="text-sm font-medium truncate">{member.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{member.position}</p>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0 hidden sm:block">#{member.display_order}</span>
                       <div className="flex items-center gap-1 shrink-0">
                         <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => {
                           setEditingLeadership(member);
@@ -1120,13 +1183,6 @@ export default function Admin() {
               <Input value={leadershipFormData.quote}
                 onChange={e => setLeadershipFormData({ ...leadershipFormData, quote: e.target.value })}
                 placeholder="Inspirational quote" className="mt-1" />
-            </div>
-
-            <div className="w-24">
-              <Label className="text-xs text-muted-foreground">Display Order</Label>
-              <Input type="number" value={leadershipFormData.display_order}
-                onChange={e => setLeadershipFormData({ ...leadershipFormData, display_order: parseInt(e.target.value) || 0 })}
-                className="mt-1" />
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
