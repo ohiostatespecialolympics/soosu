@@ -1180,13 +1180,6 @@ export default function Admin() {
                 placeholder="Inspirational quote" className="mt-1" />
             </div>
 
-            <div className="w-24">
-              <Label className="text-xs text-muted-foreground">Display Order</Label>
-              <Input type="number" value={leadershipFormData.display_order}
-                onChange={e => setLeadershipFormData({ ...leadershipFormData, display_order: parseInt(e.target.value) || 0 })}
-                className="mt-1" />
-            </div>
-
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setLeadershipDialogOpen(false)}>Cancel</Button>
               <Button type="submit" size="sm">{editingLeadership ? "Save Changes" : "Add Member"}</Button>
