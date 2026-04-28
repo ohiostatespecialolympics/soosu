@@ -437,12 +437,37 @@ export default function Admin() {
   );
 
   if (!isAdmin) return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30">
-      <Card className="w-full max-w-sm text-center">
-        <CardHeader><CardTitle className="flex items-center justify-center gap-2"><AlertCircle className="text-destructive h-5 w-5" /> Access Denied</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">You need admin privileges to access this page.</p>
-          <Button onClick={() => navigate("/")} className="w-full">Go Home</Button>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center space-y-3">
+          <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+            <Shield className="h-7 w-7 text-primary" />
+          </div>
+          <CardTitle className="text-2xl">Admin Access Required</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              You're signed in{user?.email ? ` as ${user.email}` : ""}, but this page is only available to club administrators.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              If you should have access, please contact the chapter <span className="font-medium text-foreground">President</span> to request admin permissions.
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+            <p className="font-medium text-foreground">Need help?</p>
+            <p>Reach out via the <a href="/contact" className="underline hover:text-primary">Contact page</a> and mention you need CMS admin access.</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button onClick={() => navigate("/")} className="w-full">Return to Home</Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={async () => { await supabase.auth.signOut(); navigate("/auth"); }}
+            >
+              <LogOut className="h-4 w-4 mr-2" /> Sign out
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
