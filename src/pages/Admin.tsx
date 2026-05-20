@@ -12,7 +12,8 @@ import { User } from "@supabase/supabase-js";
 import {
   Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Upload,
   X, Repeat, CalendarPlus, LayoutDashboard, Users, Trophy, Star, ChevronRight,
-  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck, CheckSquare, GripVertical
+  Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck, CheckSquare, GripVertical,
+  Receipt, DollarSign, Briefcase
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +21,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { addDays, addWeeks, addMonths, format, parseISO } from "date-fns";
+import MyReimbursements from "@/components/admin/MyReimbursements";
+import FinanceReview from "@/components/admin/FinanceReview";
+import PositionsManager from "@/components/admin/PositionsManager";
+import NotificationsBell from "@/components/admin/NotificationsBell";
 
 interface Event {
   id: string;
@@ -58,15 +63,7 @@ interface UserWithRole {
   role: string | null;
 }
 
-type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users";
-
-const NAV = [
-  { id: "dashboard" as Section, label: "Dashboard", icon: LayoutDashboard },
-  { id: "events" as Section, label: "Events", icon: Calendar },
-  { id: "leadership" as Section, label: "Leadership", icon: Users },
-  { id: "sponsors" as Section, label: "Sponsorships", icon: Star },
-  { id: "users" as Section, label: "Users", icon: Shield },
-];
+type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users" | "my-reimbursements" | "finance" | "positions";
 
 const TIER_COLORS: Record<string, string> = {
   platinum: "bg-slate-200 text-slate-800",
@@ -82,6 +79,8 @@ export default function Admin() {
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canManageFinance, setCanManageFinance] = useState(false);
+  const [hasPosition, setHasPosition] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -239,12 +238,18 @@ export default function Admin() {
   };
 
   const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase.from("user_roles").select("role")
-      .eq("user_id", userId).eq("role", "admin").maybeSingle();
-    if (!data) { setLoading(false); return; }
-    setIsAdmin(true);
+    const [{ data: roleRow }, { data: posRows }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle(),
+      supabase.from("user_exec_positions").select("position_id, exec_positions(can_manage_finance)").eq("user_id", userId),
+    ]);
+    const admin = !!roleRow;
+    const finance = (posRows || []).some((r: any) => r.exec_positions?.can_manage_finance);
+    const anyPos = (posRows || []).length > 0;
+    setIsAdmin(admin);
+    setCanManageFinance(admin || finance);
+    setHasPosition(anyPos);
     setLoading(false);
-    fetchAll();
+    if (admin) fetchAll();
   };
 
   const fetchAll = () => {
@@ -436,7 +441,9 @@ export default function Admin() {
     </div>
   );
 
-  if (!isAdmin) return (
+  const portalAccess = isAdmin || canManageFinance || hasPosition;
+
+  if (!portalAccess) return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-3">
@@ -479,6 +486,19 @@ export default function Admin() {
   const upcomingEvents = events
     .filter(e => new Date(e.event_date + "T00:00:00") >= today)
     .slice(0, 3);
+
+  const NAV: { id: Section; label: string; icon: any }[] = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    ...(isAdmin ? [
+      { id: "events" as Section, label: "Events", icon: Calendar },
+      { id: "leadership" as Section, label: "Leadership", icon: Users },
+      { id: "sponsors" as Section, label: "Sponsorships", icon: Star },
+      { id: "users" as Section, label: "Users", icon: Shield },
+      { id: "positions" as Section, label: "Positions", icon: Briefcase },
+    ] : []),
+    { id: "my-reimbursements", label: "My Reimbursements", icon: Receipt },
+    ...(canManageFinance ? [{ id: "finance" as Section, label: "Finance", icon: DollarSign }] : []),
+  ];
 
   return (
     <div className="min-h-screen flex bg-muted/20">
