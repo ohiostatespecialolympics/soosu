@@ -549,11 +549,27 @@ export default function Admin() {
           <div className="flex-1">
             <h1 className="text-sm font-semibold capitalize">{NAV.find(n => n.id === activeSection)?.label}</h1>
           </div>
+          {user && <NotificationsBell userId={user.id} />}
           <span className="text-xs text-muted-foreground hidden sm:block">{user?.email}</span>
         </header>
 
         {/* Page content */}
         <main className="flex-1 overflow-auto p-6">
+
+          {/* ── MY REIMBURSEMENTS ── */}
+          {activeSection === "my-reimbursements" && user && (
+            <MyReimbursements userId={user.id} />
+          )}
+
+          {/* ── FINANCE ── */}
+          {activeSection === "finance" && canManageFinance && user && (
+            <FinanceReview reviewerId={user.id} />
+          )}
+
+          {/* ── POSITIONS ── */}
+          {activeSection === "positions" && isAdmin && (
+            <PositionsManager />
+          )}
 
           {/* ── DASHBOARD ── */}
           {activeSection === "dashboard" && (
