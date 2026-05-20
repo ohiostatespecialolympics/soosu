@@ -576,9 +576,12 @@ export default function Admin() {
             <div className="space-y-6 max-w-4xl">
               <div>
                 <h2 className="text-xl font-semibold">Welcome back 👋</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Here's a quick overview of your site content.</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {isAdmin ? "Here's a quick overview of your site content." : "Use the sidebar to manage your reimbursements and tasks."}
+                </p>
               </div>
 
+              {isAdmin && <>
               {/* Stats row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
@@ -657,6 +660,24 @@ export default function Admin() {
                   </Button>
                 </div>
               </div>
+              </>}
+
+              {!isAdmin && (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <button onClick={() => setActiveSection("my-reimbursements")} className="text-left bg-background border border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                    <Receipt className="h-4 w-4 text-muted-foreground mb-2" />
+                    <div className="text-sm font-semibold">My Reimbursements</div>
+                    <div className="text-xs text-muted-foreground">Submit and track expense reimbursements.</div>
+                  </button>
+                  {canManageFinance && (
+                    <button onClick={() => setActiveSection("finance")} className="text-left bg-background border border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                      <DollarSign className="h-4 w-4 text-muted-foreground mb-2" />
+                      <div className="text-sm font-semibold">Finance Review</div>
+                      <div className="text-xs text-muted-foreground">Approve requests and manage budgets.</div>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
