@@ -80,6 +80,9 @@ export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [canManageFinance, setCanManageFinance] = useState(false);
+  const [canEditCms, setCanEditCms] = useState(false);
+  const [canManageRoster, setCanManageRoster] = useState(false);
+  const [canManageTasks, setCanManageTasks] = useState(false);
   const [hasPosition, setHasPosition] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
@@ -240,16 +243,23 @@ export default function Admin() {
   const checkAdminRole = async (userId: string) => {
     const [{ data: roleRow }, { data: posRows }] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle(),
-      supabase.from("user_exec_positions").select("position_id, exec_positions(can_manage_finance)").eq("user_id", userId),
+      supabase.from("user_exec_positions").select("position_id, exec_positions(can_manage_finance, can_edit_cms, can_manage_roster, can_manage_tasks)").eq("user_id", userId),
     ]);
     const admin = !!roleRow;
-    const finance = (posRows || []).some((r: any) => r.exec_positions?.can_manage_finance);
+    const rows = (posRows || []) as any[];
+    const finance = rows.some(r => r.exec_positions?.can_manage_finance);
+    const cms = rows.some(r => r.exec_positions?.can_edit_cms);
+    const roster = rows.some(r => r.exec_positions?.can_manage_roster);
+    const tasks = rows.some(r => r.exec_positions?.can_manage_tasks);
     const anyPos = (posRows || []).length > 0;
     setIsAdmin(admin);
     setCanManageFinance(admin || finance);
+    setCanEditCms(admin || cms);
+    setCanManageRoster(admin || roster);
+    setCanManageTasks(admin || tasks);
     setHasPosition(anyPos);
     setLoading(false);
-    if (admin) fetchAll();
+    if (admin || cms) fetchAll();
   };
 
   const fetchAll = () => {
@@ -489,10 +499,12 @@ export default function Admin() {
 
   const NAV: { id: Section; label: string; icon: any }[] = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    ...(isAdmin ? [
+    ...(canEditCms ? [
       { id: "events" as Section, label: "Events", icon: Calendar },
       { id: "leadership" as Section, label: "Leadership", icon: Users },
       { id: "sponsors" as Section, label: "Sponsorships", icon: Star },
+    ] : []),
+    ...(isAdmin ? [
       { id: "users" as Section, label: "Users", icon: Shield },
       { id: "positions" as Section, label: "Positions", icon: Briefcase },
     ] : []),
@@ -577,11 +589,11 @@ export default function Admin() {
               <div>
                 <h2 className="text-xl font-semibold">Welcome back 👋</h2>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {isAdmin ? "Here's a quick overview of your site content." : "Use the sidebar to manage your reimbursements and tasks."}
+                  {canEditCms ? "Here's a quick overview of your site content." : "Use the sidebar to manage your reimbursements and tasks."}
                 </p>
               </div>
 
-              {isAdmin && <>
+              {canEditCms && <>
               {/* Stats row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
@@ -662,7 +674,7 @@ export default function Admin() {
               </div>
               </>}
 
-              {!isAdmin && (
+              {!canEditCms && (
                 <div className="grid sm:grid-cols-2 gap-3">
                   <button onClick={() => setActiveSection("my-reimbursements")} className="text-left bg-background border border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
                     <Receipt className="h-4 w-4 text-muted-foreground mb-2" />
