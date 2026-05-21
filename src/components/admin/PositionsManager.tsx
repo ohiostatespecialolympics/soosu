@@ -55,7 +55,10 @@ export default function PositionsManager() {
     setAssignments((a as Assignment[]) || []);
     try {
       const { data } = await supabase.functions.invoke("list-users");
-      if (data?.users) setUsers(data.users.map((u: any) => ({ id: u.id, email: u.email })));
+      const list = Array.isArray(data) ? data : data?.users;
+      if (Array.isArray(list)) {
+        setUsers(list.map((u: any) => ({ id: u.id, email: u.email })));
+      }
     } catch {}
     setLoading(false);
   };
