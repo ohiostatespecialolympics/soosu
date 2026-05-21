@@ -106,12 +106,12 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
     if (reviewAction === "paid") patch.paid_at = new Date().toISOString();
     const { error } = await supabase.from("reimbursement_requests").update(patch).eq("id", reviewing.id);
     if (!error) {
-      await supabase.from("notifications").insert({
+      await supabase.functions.invoke("send-notification", { body: {
         user_id: reviewing.user_id,
         title: `Reimbursement ${reviewAction}`,
         body: `"${reviewing.description}" ($${Number(reviewing.amount).toFixed(2)})${reviewComment.trim() ? ` — ${reviewComment.trim()}` : ""}`,
         category: "reimbursement",
-      });
+      }});
     }
     setSaving(false);
     if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -133,12 +133,12 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
       created_by: reviewerId,
     }, { onConflict: "user_id,fiscal_year" });
     if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
-    await supabase.from("notifications").insert({
+    await supabase.functions.invoke("send-notification", { body: {
       user_id: budgetForm.user_id,
       title: "Budget updated",
       body: `Your ${fy} budget was set to $${amt.toFixed(2)}.`,
       category: "budget",
-    });
+    }});
     toast({ title: "Budget saved" });
     setBudgetDialog(false);
     setBudgetForm({ user_id: "", amount: "", notes: "" });
