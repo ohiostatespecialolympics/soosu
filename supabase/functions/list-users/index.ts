@@ -35,16 +35,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check admin role
+    // Check admin role OR roster permission
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
-    const { data: roleData } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", caller.id)
-      .eq("role", "admin")
-      .maybeSingle();
+    const [{ data: roleData }, { data: rosterAllowed }] = await Promise.all([
+      adminClient.from("user_roles").select("role").eq("user_id", caller.id).eq("role", "admin").maybeSingle(),
+      adminClient.rpc("has_roster_permission", { _user_id: caller.id }),
+    ]);
 
-    if (!roleData) {
+    if (!roleData && !rosterAllowed) {
       return new Response(JSON.stringify({ error: "Admin access required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
