@@ -25,6 +25,7 @@ import MyReimbursements from "@/components/admin/MyReimbursements";
 import FinanceReview from "@/components/admin/FinanceReview";
 import PositionsManager from "@/components/admin/PositionsManager";
 import NotificationsBell from "@/components/admin/NotificationsBell";
+import TasksManager from "@/components/admin/TasksManager";
 
 interface Event {
   id: string;
@@ -63,7 +64,7 @@ interface UserWithRole {
   role: string | null;
 }
 
-type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users" | "my-reimbursements" | "finance" | "positions";
+type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users" | "my-reimbursements" | "finance" | "positions" | "tasks";
 
 const TIER_COLORS: Record<string, string> = {
   platinum: "bg-slate-200 text-slate-800",
@@ -506,8 +507,11 @@ export default function Admin() {
     ] : []),
     ...(isAdmin ? [
       { id: "users" as Section, label: "Users", icon: Shield },
+    ] : []),
+    ...((isAdmin || canManageRoster) ? [
       { id: "positions" as Section, label: "Positions", icon: Briefcase },
     ] : []),
+    { id: "tasks" as Section, label: "Tasks", icon: CheckSquare },
     { id: "my-reimbursements", label: "My Reimbursements", icon: Receipt },
     ...(canManageFinance ? [{ id: "finance" as Section, label: "Finance", icon: DollarSign }] : []),
   ];
@@ -579,8 +583,13 @@ export default function Admin() {
           )}
 
           {/* ── POSITIONS ── */}
-          {activeSection === "positions" && isAdmin && (
+          {activeSection === "positions" && (isAdmin || canManageRoster) && (
             <PositionsManager />
+          )}
+
+          {/* ── TASKS ── */}
+          {activeSection === "tasks" && user && (
+            <TasksManager userId={user.id} canManage={canManageTasks} />
           )}
 
           {/* ── DASHBOARD ── */}
