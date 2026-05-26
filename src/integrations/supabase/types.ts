@@ -47,6 +47,39 @@ export type Database = {
         }
         Relationships: []
       }
+      content_blocks: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          label: string | null
+          page: string
+          type: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          label?: string | null
+          page?: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string | null
+          page?: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string | null
@@ -157,6 +190,33 @@ export type Database = {
           name?: string
           position?: string
           quote?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -375,6 +435,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_cms_permission: { Args: { _user_id: string }; Returns: boolean }
       has_finance_permission: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
