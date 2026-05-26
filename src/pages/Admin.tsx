@@ -26,6 +26,8 @@ import FinanceReview from "@/components/admin/FinanceReview";
 import PositionsManager from "@/components/admin/PositionsManager";
 import NotificationsBell from "@/components/admin/NotificationsBell";
 import TasksManager from "@/components/admin/TasksManager";
+import ContentEditor from "@/components/admin/ContentEditor";
+import MembersManager from "@/components/admin/MembersManager";
 
 interface Event {
   id: string;
@@ -64,7 +66,7 @@ interface UserWithRole {
   role: string | null;
 }
 
-type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users" | "my-reimbursements" | "finance" | "positions" | "tasks";
+type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users" | "my-reimbursements" | "finance" | "positions" | "tasks" | "content" | "members";
 
 const TIER_COLORS: Record<string, string> = {
   platinum: "bg-slate-200 text-slate-800",
@@ -504,12 +506,14 @@ export default function Admin() {
       { id: "events" as Section, label: "Events", icon: Calendar },
       { id: "leadership" as Section, label: "Leadership", icon: Users },
       { id: "sponsors" as Section, label: "Sponsorships", icon: Star },
+      { id: "content" as Section, label: "Site Content", icon: FileText },
     ] : []),
     ...(isAdmin ? [
       { id: "users" as Section, label: "Users", icon: Shield },
     ] : []),
     ...((isAdmin || canManageRoster) ? [
       { id: "positions" as Section, label: "Positions", icon: Briefcase },
+      { id: "members" as Section, label: "Members", icon: UserCheck },
     ] : []),
     { id: "tasks" as Section, label: "Tasks", icon: CheckSquare },
     { id: "my-reimbursements", label: "My Reimbursements", icon: Receipt },
@@ -590,6 +594,16 @@ export default function Admin() {
           {/* ── TASKS ── */}
           {activeSection === "tasks" && user && (
             <TasksManager userId={user.id} canManage={canManageTasks} />
+          )}
+
+          {/* ── SITE CONTENT ── */}
+          {activeSection === "content" && canEditCms && (
+            <ContentEditor />
+          )}
+
+          {/* ── MEMBERS ── */}
+          {activeSection === "members" && (isAdmin || canManageRoster) && user && (
+            <MembersManager userId={user.id} />
           )}
 
           {/* ── DASHBOARD ── */}
