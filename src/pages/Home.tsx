@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Calendar, Users, Award, TrendingUp, Sparkles, ArrowRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import logo from "@/assets/logo.png";
+import { useContent } from "@/hooks/useContent";
 
 const AnimatedCounter = ({ target, suffix = "" }: { target: number; suffix?: string }) => {
   const [count, setCount] = useState(0);
@@ -42,7 +43,36 @@ const AnimatedCounter = ({ target, suffix = "" }: { target: number; suffix?: str
   );
 };
 
+/** Parses values like "150+" into { target: 150, suffix: "+" } */
+const parseStat = (raw: string, fallback: { target: number; suffix: string }) => {
+  const m = String(raw).match(/^(\d+)(.*)$/);
+  if (!m) return fallback;
+  return { target: parseInt(m[1], 10), suffix: m[2] || "" };
+};
+
 const Home = () => {
+  const heroTag = useContent("home.hero.tag", "The Ohio State University Chapter");
+  const heroTitle1 = useContent("home.hero.title1", "EMPOWERING");
+  const heroTitle2 = useContent("home.hero.title2", "ATHLETES.");
+  const heroSubtitle = useContent("home.hero.subtitle", "Celebrating Ability.");
+  const heroSubtext = useContent("home.hero.subtext", "Building an inclusive community through sports, one athlete at a time.");
+  const ctaPrimary = useContent("home.hero.cta_primary", "Get Involved");
+  const ctaSecondary = useContent("home.hero.cta_secondary", "View Events");
+  const statVolunteers = parseStat(useContent("home.stats.volunteers", "150+"), { target: 150, suffix: "+" });
+  const statAthletes = parseStat(useContent("home.stats.athletes", "300+"), { target: 300, suffix: "+" });
+  const statEvents = parseStat(useContent("home.stats.events", "100+"), { target: 100, suffix: "+" });
+  const missionTitle = useContent("home.mission.title", "Our Mission");
+  const missionBody = useContent("home.mission.body", "");
+  const wwdTitle = useContent("home.whatwedo.title", "What We Do");
+  const c1t = useContent("home.whatwedo.card1_title", "Athlete Support");
+  const c1b = useContent("home.whatwedo.card1_body", "");
+  const c2t = useContent("home.whatwedo.card2_title", "Campus Events");
+  const c2b = useContent("home.whatwedo.card2_body", "");
+  const c3t = useContent("home.whatwedo.card3_title", "Community Impact");
+  const c3b = useContent("home.whatwedo.card3_body", "");
+  const impactTitle = useContent("home.impact.title", "Making a Difference Together");
+  const impactBody = useContent("home.impact.body", "Last semester, over 60 dedicated volunteers joined us to support our athletes and events.");
+  const impactCta = useContent("home.impact.cta", "Join Our Team");
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -73,7 +103,7 @@ const Home = () => {
                 style={{ animationDelay: "0.2s" }}
               >
                 <span className="inline-block font-montserrat text-xs font-bold tracking-[0.3em] uppercase text-primary px-0 py-1 border-l-2 border-primary pl-3">
-                  The Ohio State University Chapter
+                  {heroTag}
                 </span>
               </div>
 
@@ -84,7 +114,7 @@ const Home = () => {
                     className="font-oswald text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
                     style={{ animationDelay: "0.4s" }}
                   >
-                    EMPOWERING
+                    {heroTitle1}
                   </h1>
                 </div>
                 <div className="overflow-hidden">
@@ -92,7 +122,7 @@ const Home = () => {
                     className="font-oswald text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
                     style={{ animationDelay: "0.55s" }}
                   >
-                    ATHLETES.
+                    {heroTitle2}
                   </h1>
                 </div>
                 <div className="overflow-hidden">
@@ -100,7 +130,7 @@ const Home = () => {
                     className="font-oswald text-3xl sm:text-4xl md:text-5xl font-light text-primary-foreground/60 mt-4 opacity-0 animate-hero-slide-up"
                     style={{ animationDelay: "0.7s" }}
                   >
-                    Celebrating Ability.
+                    {heroSubtitle}
                   </p>
                 </div>
               </div>
@@ -110,7 +140,7 @@ const Home = () => {
                 className="font-montserrat text-base md:text-lg text-primary-foreground/50 max-w-md leading-relaxed opacity-0 animate-hero-slide-up"
                 style={{ animationDelay: "0.85s" }}
               >
-                Building an inclusive community through sports, one athlete at a time.
+                {heroSubtext}
               </p>
 
               {/* CTA */}
@@ -123,7 +153,7 @@ const Home = () => {
                     size="lg"
                     className="font-montserrat font-bold text-base px-8 py-7 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 group border-2 border-primary rounded-md"
                   >
-                    Get Involved
+                    {ctaPrimary}
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -134,7 +164,7 @@ const Home = () => {
                     className="font-montserrat font-bold text-base px-8 py-7 rounded-md border-2 border-primary-foreground/50 hover:bg-primary-foreground/10 hover:border-primary-foreground transition-all duration-300 text-secondary-foreground"
                   >
                     <Calendar className="mr-2 h-5 w-5" />
-                    View Events
+                    {ctaSecondary}
                   </Button>
                 </Link>
               </div>
@@ -147,9 +177,9 @@ const Home = () => {
             >
               <div className="grid grid-cols-3 gap-0">
                 {[
-                  { value: 150, suffix: "+", label: "Volunteers" },
-                  { value: 300, suffix: "+", label: "Athletes" },
-                  { value: 100, suffix: "+", label: "Events / Year" },
+                  { value: statVolunteers.target, suffix: statVolunteers.suffix, label: "Volunteers" },
+                  { value: statAthletes.target, suffix: statAthletes.suffix, label: "Athletes" },
+                  { value: statEvents.target, suffix: statEvents.suffix, label: "Events / Year" },
                 ].map((stat, i) => (
                   <div
                     key={stat.label}
@@ -184,15 +214,9 @@ const Home = () => {
       <section className="py-16 px-4 bg-background">
         <div className="container mx-auto max-w-4xl">
           <h2 className="font-oswald text-3xl md:text-4xl font-bold text-center mb-6">
-            Our Mission
+            {missionTitle}
           </h2>
-          <p className="font-montserrat text-lg text-center text-muted-foreground">
-            As the Ohio State University chapter of Special Olympics, we are dedicated to providing year-round sports training 
-            and athletic competition in a variety of Olympic-type sports for children and adults with intellectual disabilities. 
-            We give our athletes continuing opportunities to develop physical fitness, demonstrate courage, experience joy, 
-            and participate in a sharing of gifts, skills, and friendship with their families, other Special Olympics athletes, 
-            and the community.
-          </p>
+          <p className="font-montserrat text-lg text-center text-muted-foreground whitespace-pre-line">{missionBody}</p>
         </div>
       </section>
 
@@ -200,40 +224,31 @@ const Home = () => {
       <section className="py-16 px-4 bg-accent">
         <div className="container mx-auto">
           <h2 className="font-oswald text-3xl md:text-4xl font-bold text-center mb-12">
-            What We Do
+            {wwdTitle}
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="bg-primary text-primary-foreground w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="h-8 w-8" />
               </div>
-              <h3 className="font-oswald text-xl font-bold mb-3">Athlete Support</h3>
-              <p className="font-montserrat text-muted-foreground">
-                We provide comprehensive support for Special Olympics athletes, including training, equipment, 
-                and transportation to competitions throughout the year.
-              </p>
+              <h3 className="font-oswald text-xl font-bold mb-3">{c1t}</h3>
+              <p className="font-montserrat text-muted-foreground whitespace-pre-line">{c1b}</p>
             </div>
 
             <div className="text-center">
               <div className="bg-primary text-primary-foreground w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="h-8 w-8" />
               </div>
-              <h3 className="font-oswald text-xl font-bold mb-3">Campus Events</h3>
-              <p className="font-montserrat text-muted-foreground">
-                From our annual Polar Plunge to regular volunteer opportunities, we host engaging events 
-                that bring the OSU community together around inclusion.
-              </p>
+              <h3 className="font-oswald text-xl font-bold mb-3">{c2t}</h3>
+              <p className="font-montserrat text-muted-foreground whitespace-pre-line">{c2b}</p>
             </div>
 
             <div className="text-center">
               <div className="bg-primary text-primary-foreground w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="h-8 w-8" />
               </div>
-              <h3 className="font-oswald text-xl font-bold mb-3">Community Impact</h3>
-              <p className="font-montserrat text-muted-foreground">
-                Through partnerships with local organizations and schools, we extend our impact beyond 
-                campus to create lasting change in the Columbus community.
-              </p>
+              <h3 className="font-oswald text-xl font-bold mb-3">{c3t}</h3>
+              <p className="font-montserrat text-muted-foreground whitespace-pre-line">{c3b}</p>
             </div>
           </div>
         </div>
@@ -243,14 +258,12 @@ const Home = () => {
       <section className="py-16 px-4 bg-primary text-primary-foreground">
         <div className="container mx-auto text-center">
           <h2 className="font-oswald text-3xl md:text-4xl font-bold mb-4">
-            Making a Difference Together
+            {impactTitle}
           </h2>
-          <p className="font-montserrat text-xl mb-8">
-            Last semester, over 60 dedicated volunteers joined us to support our athletes and events.
-          </p>
+          <p className="font-montserrat text-xl mb-8 whitespace-pre-line">{impactBody}</p>
           <Link to="/get-involved">
             <Button size="lg" variant="secondary" className="font-montserrat font-semibold">
-              Join Our Team
+              {impactCta}
             </Button>
           </Link>
         </div>
