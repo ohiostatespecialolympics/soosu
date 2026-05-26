@@ -22,13 +22,14 @@ const JoinUs = () => {
   const bottomTitle = useContent("join.bottom.title", "Questions? We're Here to Help.");
   const bottomBody = useContent("join.bottom.body", "Not sure where to start? Reach out and we'd love to chat.");
 
-  const steps = [
+  type Step = { icon: typeof Heart; title: string; description: string; cta?: { label: string; href: string; external: boolean } };
+  const steps: Step[] = [
     { icon: Heart, title: s1t, description: s1b },
     { icon: Users, title: s2t, description: s2b, cta: { label: "Fill Out Interest Form", href: s2url, external: true } },
     { icon: MessageCircle, title: s3t, description: s3b, cta: { label: "Join the GroupMe", href: s3url, external: true } },
     { icon: CheckCircle2, title: s4t, description: s4b },
     { icon: Calendar, title: s5t, description: s5b, cta: { label: "View Upcoming Events", href: "/events", external: false } },
-  ] as const;
+  ];
 
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const [visibleSteps, setVisibleSteps] = useState<Set<number>>(new Set());
