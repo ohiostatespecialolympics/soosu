@@ -1,56 +1,36 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Circle, MessageCircle, Calendar, Users, Heart, ArrowRight, ExternalLink } from "lucide-react";
-
-const steps = [
-  {
-    icon: Heart,
-    title: "Learn About Us",
-    description:
-      "Special Olympics at Ohio State is a student-run organization that partners with local Special Olympics programs to provide sports training, competition, and community for individuals with intellectual disabilities. No experience needed — just a willingness to show up and make a difference.",
-  },
-  {
-    icon: Users,
-    title: "Fill Out an Interest Form",
-    description:
-      "Let us know you're interested! Fill out our quick interest form so our team can reach out with next steps, upcoming events, and ways to get involved right away.",
-    cta: {
-      label: "Fill Out Interest Form",
-      href: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
-      external: true,
-    },
-  },
-  {
-    icon: MessageCircle,
-    title: "Join Our GroupMe",
-    description:
-      "Our GroupMe is where we share updates, event reminders, and coordinate everything. It's the fastest way to stay in the loop and connect with other volunteers.",
-    cta: {
-      label: "Join the GroupMe",
-      href: "https://groupme.com/join_group/YOUR_GROUP_ID",
-      external: true,
-    },
-  },
-  {
-    icon: CheckCircle2,
-    title: "Complete Online Training",
-    description:
-      "Once you've filled out the interest form and joined the GroupMe, you'll be added to our Canvas page. From there, complete a quick 15-minute online training — it's simple, self-paced, and only needs to be done once.",
-  },
-  {
-    icon: Calendar,
-    title: "Show Up to Practices & Events",
-    description:
-      "That's it — you're in! Come to weekly practices, attend competitions, and join social events throughout the semester. There's no minimum commitment, but we recommend attending at least 2–3 events per semester to get the most out of the experience.",
-    cta: {
-      label: "View Upcoming Events",
-      href: "/events",
-      external: false,
-    },
-  },
-];
+import { useContent } from "@/hooks/useContent";
 
 const JoinUs = () => {
+  const heroTag = useContent("join.hero.tag", "Volunteer with us");
+  const heroTitle = useContent("join.hero.title", "Five steps to\njoin the team.");
+  const heroSubtext = useContent("join.hero.subtext", "No experience needed — just a willingness to show up. Follow the checklist below and you'll be part of one of the most rewarding communities on campus.");
+  const s1t = useContent("join.step1.title", "Learn About Us");
+  const s1b = useContent("join.step1.body", "");
+  const s2t = useContent("join.step2.title", "Fill Out an Interest Form");
+  const s2b = useContent("join.step2.body", "");
+  const s2url = useContent("join.step2.cta_url", "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform");
+  const s3t = useContent("join.step3.title", "Join Our GroupMe");
+  const s3b = useContent("join.step3.body", "");
+  const s3url = useContent("join.step3.cta_url", "https://groupme.com/join_group/YOUR_GROUP_ID");
+  const s4t = useContent("join.step4.title", "Complete Online Training");
+  const s4b = useContent("join.step4.body", "");
+  const s5t = useContent("join.step5.title", "Show Up to Practices & Events");
+  const s5b = useContent("join.step5.body", "");
+  const bottomTitle = useContent("join.bottom.title", "Questions? We're Here to Help.");
+  const bottomBody = useContent("join.bottom.body", "Not sure where to start? Reach out and we'd love to chat.");
+
+  type Step = { icon: typeof Heart; title: string; description: string; cta?: { label: string; href: string; external: boolean } };
+  const steps: Step[] = [
+    { icon: Heart, title: s1t, description: s1b },
+    { icon: Users, title: s2t, description: s2b, cta: { label: "Fill Out Interest Form", href: s2url, external: true } },
+    { icon: MessageCircle, title: s3t, description: s3b, cta: { label: "Join the GroupMe", href: s3url, external: true } },
+    { icon: CheckCircle2, title: s4t, description: s4b },
+    { icon: Calendar, title: s5t, description: s5b, cta: { label: "View Upcoming Events", href: "/events", external: false } },
+  ];
+
   const [checkedSteps, setCheckedSteps] = useState<Set<number>>(new Set());
   const [visibleSteps, setVisibleSteps] = useState<Set<number>>(new Set());
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -97,13 +77,13 @@ const JoinUs = () => {
           <div className="grid md:grid-cols-[1fr,auto] gap-8 items-end">
             <div className="space-y-5">
               <p className="font-montserrat text-sm font-semibold tracking-widest uppercase text-primary-foreground/70">
-                Volunteer with us
+                {heroTag}
               </p>
-              <h1 className="font-oswald text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.08] text-primary-foreground">
-                Five steps to<br />join the team.
+              <h1 className="font-oswald text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.08] text-primary-foreground whitespace-pre-line">
+                {heroTitle}
               </h1>
-              <p className="font-montserrat text-base md:text-lg text-primary-foreground/80 leading-relaxed max-w-lg">
-                No experience needed — just a willingness to show up. Follow the checklist below and you'll be part of one of the most rewarding communities on campus.
+              <p className="font-montserrat text-base md:text-lg text-primary-foreground/80 leading-relaxed max-w-lg whitespace-pre-line">
+                {heroSubtext}
               </p>
             </div>
             <div className="hidden md:flex flex-col items-center gap-2 pb-4">
@@ -211,7 +191,7 @@ const JoinUs = () => {
                           {step.title}
                         </h2>
                         <p className="font-montserrat text-muted-foreground leading-relaxed text-[15px]">
-                          {step.description}
+                          <span className="whitespace-pre-line">{step.description}</span>
                         </p>
                         {step.cta && (
                           <div className="pt-3">
@@ -258,11 +238,9 @@ const JoinUs = () => {
       <section className="py-20 px-4 bg-muted/50">
         <div className="container mx-auto max-w-2xl text-center space-y-6">
           <h2 className="font-oswald text-3xl md:text-4xl font-bold text-foreground">
-            Questions? We're Here to Help.
+            {bottomTitle}
           </h2>
-          <p className="font-montserrat text-muted-foreground leading-relaxed">
-            Not sure where to start? Reach out and we'd love to chat.
-          </p>
+          <p className="font-montserrat text-muted-foreground leading-relaxed whitespace-pre-line">{bottomBody}</p>
           <a href="/contact">
             <Button className="font-montserrat font-semibold px-8 py-3 transition-all duration-200 hover:scale-105">
               Contact Us
