@@ -2,18 +2,31 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, Users, Building2 } from "lucide-react";
+import { useContent } from "@/hooks/useContent";
 
 const GetInvolved = () => {
+  const title = useContent("getinvolved.title", "Get Involved");
+  const intro = useContent("getinvolved.intro", "There are many ways to support Special Olympics at OSU. Whether you want to volunteer, participate as an athlete, or partner with us, we'd love to have you join our community.");
+  const stTitle = useContent("getinvolved.students.title", "Students");
+  const stDesc = useContent("getinvolved.students.desc", "Join our team of dedicated volunteers who support athletes at practices and events.");
+  const atTitle = useContent("getinvolved.athletes.title", "Athletes");
+  const atDesc = useContent("getinvolved.athletes.desc", "Are you or someone you know interested in joining Special Olympics?");
+  const ptTitle = useContent("getinvolved.partners.title", "Companies & Clubs");
+  const ptDesc = useContent("getinvolved.partners.desc", "Partner with us to bring inclusion initiatives to your group or organization.");
+  const tTitle = useContent("getinvolved.testimonials.title", "What Our Members Say");
+  const t1q = useContent("getinvolved.testimonial1.quote", "");
+  const t1a = useContent("getinvolved.testimonial1.attrib", "— Alex S., Sophomore Volunteer");
+  const t2q = useContent("getinvolved.testimonial2.quote", "");
+  const t2a = useContent("getinvolved.testimonial2.attrib", "— Marcus T., Senior Volunteer");
+  const qTitle = useContent("getinvolved.questions.title", "Have Questions?");
+  const qBody = useContent("getinvolved.questions.body", "We'd love to hear from you. Visit our contact page to reach out directly.");
   return (
     <div className="min-h-screen py-16 px-4">
       <div className="container mx-auto max-w-6xl">
         <h1 className="font-oswald text-4xl md:text-5xl font-bold text-center mb-4">
-          Get Involved
+          {title}
         </h1>
-        <p className="font-montserrat text-lg text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
-          There are many ways to support Special Olympics at OSU. Whether you want to volunteer, 
-          participate as an athlete, or partner with us, we'd love to have you join our community.
-        </p>
+        <p className="font-montserrat text-lg text-center text-muted-foreground mb-12 max-w-3xl mx-auto whitespace-pre-line">{intro}</p>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {/* Students */}
@@ -22,10 +35,8 @@ const GetInvolved = () => {
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <UserCheck className="h-6 w-6" />
               </div>
-              <CardTitle className="font-oswald text-2xl">Students</CardTitle>
-              <CardDescription className="font-montserrat">
-                Join our team of dedicated volunteers who support athletes at practices and events.
-              </CardDescription>
+              <CardTitle className="font-oswald text-2xl">{stTitle}</CardTitle>
+              <CardDescription className="font-montserrat whitespace-pre-line">{stDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 font-montserrat text-sm mb-4">
@@ -57,10 +68,8 @@ const GetInvolved = () => {
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Users className="h-6 w-6" />
               </div>
-              <CardTitle className="font-oswald text-2xl">Athletes</CardTitle>
-              <CardDescription className="font-montserrat">
-                Are you or someone you know interested in joining Special Olympics?
-              </CardDescription>
+              <CardTitle className="font-oswald text-2xl">{atTitle}</CardTitle>
+              <CardDescription className="font-montserrat whitespace-pre-line">{atDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 font-montserrat text-sm mb-4">
@@ -96,10 +105,8 @@ const GetInvolved = () => {
               <div className="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center mb-4">
                 <Building2 className="h-6 w-6" />
               </div>
-              <CardTitle className="font-oswald text-2xl">Companies & Clubs</CardTitle>
-              <CardDescription className="font-montserrat">
-                Partner with us to bring inclusion initiatives to your group or organization.
-              </CardDescription>
+              <CardTitle className="font-oswald text-2xl">{ptTitle}</CardTitle>
+              <CardDescription className="font-montserrat whitespace-pre-line">{ptDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 font-montserrat text-sm mb-4">
@@ -129,24 +136,19 @@ const GetInvolved = () => {
         {/* Testimonials */}
         <section className="mb-16">
           <h2 className="font-oswald text-3xl font-bold text-center mb-8">
-            What Our Members Say
+            {tTitle}
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="bg-accent">
               <CardContent className="pt-6">
-                <p className="font-montserrat italic text-muted-foreground mb-4">
-                  "Special Olympics is such an incredible organization because it allows Ohio State students to connect with the Columbus community around us. Working with the athletes is an inspiring and heart-warming experience."
-                </p>
-                <p className="font-montserrat font-semibold">— Alex S., Sophomore Volunteer</p>
+                <p className="font-montserrat italic text-muted-foreground mb-4 whitespace-pre-line">{t1q}</p>
+                <p className="font-montserrat font-semibold">{t1a}</p>
               </CardContent>
             </Card>
             <Card className="bg-accent">
               <CardContent className="pt-6">
-                <p className="font-montserrat italic text-muted-foreground mb-4">
-                  "Being part of this organization has taught me so much about inclusion, patience, and 
-                  the power of community. I've made lifelong friends here."
-                </p>
-                <p className="font-montserrat font-semibold">— Marcus T., Senior Volunteer</p>
+                <p className="font-montserrat italic text-muted-foreground mb-4 whitespace-pre-line">{t2q}</p>
+                <p className="font-montserrat font-semibold">{t2a}</p>
               </CardContent>
             </Card>
           </div>
@@ -154,10 +156,8 @@ const GetInvolved = () => {
 
         {/* Contact Redirect Message */}
         <section className="text-center py-12 bg-muted rounded-lg">
-          <h2 className="font-oswald text-3xl font-bold mb-4">Have Questions?</h2>
-          <p className="font-montserrat text-muted-foreground mb-6">
-            We'd love to hear from you. Visit our contact page to reach out directly.
-          </p>
+          <h2 className="font-oswald text-3xl font-bold mb-4">{qTitle}</h2>
+          <p className="font-montserrat text-muted-foreground mb-6 whitespace-pre-line">{qBody}</p>
           <Link to="/contact">
             <Button className="font-montserrat font-semibold px-8 py-3">
               Go to Contact Page
