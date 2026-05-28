@@ -39,6 +39,10 @@ Deno.serve(async (req) => {
     const p = (await req.json()) as Payload;
     if (!p.user_id || !p.title) return json({ error: "user_id and title required" }, 400);
 
+    if (p.link && !/^(https?:\/\/|\/)/i.test(p.link)) {
+      return json({ error: "Invalid link" }, 400);
+    }
+
     // 1. Insert notification row
     const { error: insErr } = await admin.from("notifications").insert({
       user_id: p.user_id,
@@ -60,7 +64,7 @@ Deno.serve(async (req) => {
           <div style="font-family:system-ui,-apple-system,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
             <h2 style="color:#111;margin:0 0 12px;">${escapeHtml(p.title)}</h2>
             ${p.body ? `<p style="color:#333;line-height:1.5;">${escapeHtml(p.body)}</p>` : ""}
-            ${p.link ? `<p><a href="${p.link}" style="color:#dc2626;font-weight:600;">View details →</a></p>` : ""}
+            ${p.link ? `<p><a href="${escapeHtml(p.link)}" style="color:#dc2626;font-weight:600;">View details →</a></p>` : ""}
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
             <p style="font-size:12px;color:#999;">You're receiving this because of activity in the Admin Portal.</p>
           </div>`;
