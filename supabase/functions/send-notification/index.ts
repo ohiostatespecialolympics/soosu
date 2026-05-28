@@ -39,6 +39,10 @@ Deno.serve(async (req) => {
     const p = (await req.json()) as Payload;
     if (!p.user_id || !p.title) return json({ error: "user_id and title required" }, 400);
 
+    if (p.link && !/^(https?:\/\/|\/)/i.test(p.link)) {
+      return json({ error: "Invalid link" }, 400);
+    }
+
     // 1. Insert notification row
     const { error: insErr } = await admin.from("notifications").insert({
       user_id: p.user_id,
