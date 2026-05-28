@@ -26,6 +26,17 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
+    const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const reqOrigin = req.headers.get("origin") || "";
+    const siteUrl = Deno.env.get("SITE_URL") || "";
+    const origin = allowedOrigins.includes(reqOrigin) ? reqOrigin : siteUrl;
+    if (!origin) {
+      throw new Error("Server is not configured with an allowed origin");
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer_email: email,
       line_items: [
@@ -42,8 +53,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/donation-success?amount=${amount}`,
-      cancel_url: `${req.headers.get("origin")}/`,
+      success_url: `${origin}/donation-success?amount=${amount}`,
+      cancel_url: `${origin}/`,
       metadata: {
         donor_name: name || "Anonymous",
         donor_email: email,
