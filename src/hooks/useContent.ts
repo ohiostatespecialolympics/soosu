@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { CONTENT_DEFS } from "@/lib/contentKeys";
+
+const DEFAULT_FALLBACKS: Record<string, string> = Object.fromEntries(
+  CONTENT_DEFS.map((d) => [d.key, d.fallback])
+);
 
 type ContentMap = Record<string, string>;
 
@@ -29,18 +34,19 @@ export function refreshContent() {
 
 /** Read a content value with a hardcoded fallback. Re-renders when content refreshes. */
 export function useContent(key: string, fallback: string): string {
-  const [val, setVal] = useState<string>(() => cache?.[key] ?? fallback);
+  const effectiveFallback = fallback || DEFAULT_FALLBACKS[key] || "";
+  const [val, setVal] = useState<string>(() => cache?.[key] || effectiveFallback);
 
   useEffect(() => {
     let mounted = true;
     const listener = (m: ContentMap) => {
       if (!mounted) return;
-      setVal(m[key] ?? fallback);
+      setVal(m[key] || effectiveFallback);
     };
     listeners.add(listener);
-    loadContent().then(m => { if (mounted) setVal(m[key] ?? fallback); });
+    loadContent().then(m => { if (mounted) setVal(m[key] || effectiveFallback); });
     return () => { mounted = false; listeners.delete(listener); };
-  }, [key, fallback]);
+  }, [key, effectiveFallback]);
 
   return val;
 }
