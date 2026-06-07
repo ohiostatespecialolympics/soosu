@@ -106,7 +106,7 @@ const Privacy = () => {
               <li>Withdraw consent for processing where consent is the legal basis.</li>
             </ul>
             <p className="mt-3">
-              To exercise these rights, please contact us at <a href="mailto:contact@soosu.org" className="text-primary hover:underline">contact@soosu.org</a>.
+              To exercise these rights, please contact us at <a href="mailto:legal@soosu.org" className="text-primary hover:underline">legal@soosu.org</a>.
             </p>
           </section>
 
@@ -131,7 +131,7 @@ const Privacy = () => {
             </p>
             <p className="mt-2">
               <strong className="text-foreground">Email:</strong>{" "}
-              <a href="mailto:contact@soosu.org" className="text-primary hover:underline">contact@soosu.org</a>
+              <a href="mailto:legal@soosu.org" className="text-primary hover:underline">legal@soosu.org</a>
               <br />
               <strong className="text-foreground">Address:</strong> Ohio Union, 1739 N High St, Columbus, OH 43210
             </p>
