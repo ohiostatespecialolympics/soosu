@@ -95,6 +95,20 @@ const Footer = () => {
               Special Olympics International
             </a>
           </p>
+          <div className="flex justify-center gap-4 mt-2">
+            <a
+              href="/privacy"
+              className="font-montserrat text-xs text-background/50 hover:text-background/80 underline underline-offset-2 transition-colors"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="/terms"
+              className="font-montserrat text-xs text-background/50 hover:text-background/80 underline underline-offset-2 transition-colors"
+            >
+              Terms of Service
+            </a>
+          </div>
         </div>
       </div>
     </footer>
