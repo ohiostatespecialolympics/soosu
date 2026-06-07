@@ -134,7 +134,7 @@ const Terms = () => {
             </p>
             <p className="mt-2">
               <strong className="text-foreground">Email:</strong>{" "}
-              <a href="mailto:contact@soosu.org" className="text-primary hover:underline">contact@soosu.org</a>
+              <a href="mailto:legal@soosu.org" className="text-primary hover:underline">legal@soosu.org</a>
               <br />
               <strong className="text-foreground">Address:</strong> Ohio Union, 1739 N High St, Columbus, OH 43210
             </p>
