@@ -500,25 +500,45 @@ export default function Admin() {
     .filter(e => new Date(e.event_date + "T00:00:00") >= today)
     .slice(0, 3);
 
-  const NAV: { id: Section; label: string; icon: any }[] = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    ...(canEditCms ? [
-      { id: "events" as Section, label: "Events", icon: Calendar },
-      { id: "leadership" as Section, label: "Leadership", icon: Users },
-      { id: "sponsors" as Section, label: "Sponsorships", icon: Star },
-      { id: "content" as Section, label: "Site Content", icon: FileText },
-    ] : []),
-    ...(isAdmin ? [
-      { id: "users" as Section, label: "Users", icon: Shield },
-    ] : []),
-    ...((isAdmin || canManageRoster) ? [
-      { id: "positions" as Section, label: "Positions", icon: Briefcase },
-      { id: "members" as Section, label: "Members", icon: UserCheck },
-    ] : []),
-    { id: "tasks" as Section, label: "Tasks", icon: CheckSquare },
-    { id: "my-reimbursements", label: "My Reimbursements", icon: Receipt },
-    ...(canManageFinance ? [{ id: "finance" as Section, label: "Finance", icon: DollarSign }] : []),
+  type NavItem = { id: Section; label: string; icon: any };
+  type NavGroup = { label: string; items: NavItem[] };
+
+  const NAV_GROUPS: NavGroup[] = [
+    {
+      label: "Overview",
+      items: [{ id: "dashboard", label: "Dashboard", icon: LayoutDashboard }],
+    },
+    {
+      label: "My Workspace",
+      items: [
+        { id: "tasks", label: "Tasks", icon: CheckSquare },
+        { id: "my-reimbursements", label: "Reimbursements", icon: Receipt },
+      ],
+    },
+    ...(canEditCms ? [{
+      label: "Website",
+      items: [
+        { id: "content" as Section, label: "Site Content", icon: FileText },
+        { id: "events" as Section, label: "Events", icon: Calendar },
+        { id: "leadership" as Section, label: "Leadership", icon: Users },
+        { id: "sponsors" as Section, label: "Sponsorships", icon: Star },
+      ],
+    }] : []),
+    ...((isAdmin || canManageRoster) ? [{
+      label: "People",
+      items: [
+        { id: "members" as Section, label: "Members", icon: UserCheck },
+        { id: "positions" as Section, label: "Positions", icon: Briefcase },
+        ...(isAdmin ? [{ id: "users" as Section, label: "User Access", icon: Shield }] : []),
+      ],
+    }] : []),
+    ...(canManageFinance ? [{
+      label: "Finance",
+      items: [{ id: "finance" as Section, label: "Finance Review", icon: DollarSign }],
+    }] : []),
   ];
+
+  const NAV: NavItem[] = NAV_GROUPS.flatMap(g => g.items);
 
   return (
     <div className="min-h-screen flex bg-muted/20">
@@ -533,20 +553,32 @@ export default function Admin() {
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 p-2 space-y-0.5">
-          {NAV.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => handleNavChange(id)}
-              className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
-              }`}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {sidebarOpen && <span>{label}</span>}
-            </button>
+        <nav className="flex-1 p-2 space-y-4 overflow-y-auto">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={group.label} className="space-y-0.5">
+              {sidebarOpen ? (
+                <div className="px-2 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  {group.label}
+                </div>
+              ) : (
+                gi > 0 && <div className="mx-2 my-2 border-t border-border" />
+              )}
+              {group.items.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => handleNavChange(id)}
+                  title={!sidebarOpen ? label : undefined}
+                  className={`w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeSection === id
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {sidebarOpen && <span>{label}</span>}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
 
