@@ -544,26 +544,42 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen flex bg-muted/20">
+      {/* Mobile backdrop */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? "w-56" : "w-16"} shrink-0 bg-background border-r border-border flex flex-col transition-all duration-200`}>
+      <aside
+        className={`fixed lg:static inset-y-0 left-0 z-50 bg-background border-r border-border flex flex-col transition-transform lg:transition-all duration-200
+          w-64 ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0 lg:shrink-0 ${sidebarOpen ? "lg:w-56" : "lg:w-16"}`}
+      >
         {/* Sidebar header */}
         <div className="h-14 flex items-center px-4 border-b border-border gap-3">
-          <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => setSidebarOpen(v => !v)}>
+          {/* Desktop collapse toggle */}
+          <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 hidden lg:inline-flex" onClick={() => setSidebarOpen(v => !v)}>
             <Menu className="h-4 w-4" />
           </Button>
-          {sidebarOpen && <span className="font-semibold text-sm truncate">CMS</span>}
+          {/* Mobile close */}
+          <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 lg:hidden" onClick={() => setMobileNavOpen(false)} aria-label="Close menu">
+            <X className="h-4 w-4" />
+          </Button>
+          {(sidebarOpen || mobileNavOpen) && <span className="font-semibold text-sm truncate">CMS</span>}
         </div>
 
         {/* Nav links */}
         <nav className="flex-1 p-2 space-y-4 overflow-y-auto">
           {NAV_GROUPS.map((group, gi) => (
             <div key={group.label} className="space-y-0.5">
-              {sidebarOpen ? (
-                <div className="px-2 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  {group.label}
-                </div>
-              ) : (
-                gi > 0 && <div className="mx-2 my-2 border-t border-border" />
+              <div className={`px-2 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 ${sidebarOpen ? "lg:block" : "lg:hidden"}`}>
+                {group.label}
+              </div>
+              {!sidebarOpen && gi > 0 && (
+                <div className="hidden lg:block mx-2 my-2 border-t border-border" />
               )}
               {group.items.map(({ id, label, icon: Icon }) => (
                 <button
@@ -577,7 +593,7 @@ export default function Admin() {
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
-                  {sidebarOpen && <span>{label}</span>}
+                  <span className={sidebarOpen ? "lg:inline" : "lg:hidden"}>{label}</span>
                 </button>
               ))}
             </div>
@@ -591,7 +607,7 @@ export default function Admin() {
             className="w-full flex items-center gap-3 px-2 py-2 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           >
             <LogOut className="h-4 w-4 shrink-0" />
-            {sidebarOpen && <span>Sign Out</span>}
+            <span className={sidebarOpen ? "lg:inline" : "lg:hidden"}>Sign Out</span>
           </button>
         </div>
       </aside>
@@ -599,16 +615,19 @@ export default function Admin() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-14 bg-background border-b border-border flex items-center px-6 gap-4 shrink-0">
+        <header className="h-14 bg-background border-b border-border flex items-center px-4 sm:px-6 gap-3 sm:gap-4 shrink-0">
+          <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8 shrink-0" onClick={() => setMobileNavOpen(true)} aria-label="Open menu">
+            <Menu className="h-4 w-4" />
+          </Button>
           <div className="flex-1">
-            <h1 className="text-sm font-semibold capitalize">{NAV.find(n => n.id === activeSection)?.label}</h1>
+            <h1 className="text-sm font-semibold capitalize truncate">{NAV.find(n => n.id === activeSection)?.label}</h1>
           </div>
           {user && <NotificationsBell userId={user.id} />}
-          <span className="text-xs text-muted-foreground hidden sm:block">{user?.email}</span>
+          <span className="text-xs text-muted-foreground hidden md:block truncate max-w-[200px]">{user?.email}</span>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 sm:p-6">
 
           {/* ── MY REIMBURSEMENTS ── */}
           {activeSection === "my-reimbursements" && user && (
