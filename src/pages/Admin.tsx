@@ -90,6 +90,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Data
   const [events, setEvents] = useState<Event[]>([]);
@@ -445,6 +446,7 @@ export default function Admin() {
   const handleNavChange = (section: Section) => {
     setActiveSection(section);
     if (section === "users") fetchUsers();
+    setMobileNavOpen(false);
   };
 
   // --- Loading / Access ---
