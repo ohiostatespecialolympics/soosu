@@ -37,7 +37,7 @@ const AnimatedCounter = ({ target, suffix = "" }: { target: number; suffix?: str
   }, [target]);
 
   return (
-    <div ref={ref} className="font-oswald text-5xl md:text-7xl font-black text-primary-foreground">
+    <div ref={ref} className="font-oswald text-3xl sm:text-5xl md:text-7xl font-black text-primary-foreground">
       {count}{suffix}
     </div>
   );
