@@ -37,7 +37,7 @@ const AnimatedCounter = ({ target, suffix = "" }: { target: number; suffix?: str
   }, [target]);
 
   return (
-    <div ref={ref} className="font-oswald text-5xl md:text-7xl font-black text-primary-foreground">
+    <div ref={ref} className="font-oswald text-3xl sm:text-5xl md:text-7xl font-black text-primary-foreground">
       {count}{suffix}
     </div>
   );
@@ -76,10 +76,10 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-end overflow-hidden bg-foreground">
+      <section className="relative min-h-[100svh] flex items-end overflow-hidden bg-foreground">
         {/* Large diagonal scarlet block */}
         <div
-          className="absolute top-0 right-0 w-[55%] h-full bg-primary origin-top-right"
+          className="absolute top-0 right-0 w-[40%] sm:w-[50%] lg:w-[55%] h-full bg-primary origin-top-right"
           style={{ clipPath: "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)" }}
         />
 
@@ -93,16 +93,16 @@ const Home = () => {
         <div className="absolute top-[40%] left-0 w-full h-px bg-primary-foreground/5" />
         <div className="absolute top-[70%] left-0 w-full h-px bg-primary-foreground/10" />
 
-        <div className="container mx-auto px-6 md:px-12 pb-20 pt-32 relative z-10">
+        <div className="container mx-auto px-5 sm:px-6 md:px-12 pt-24 sm:pt-32 pb-28 sm:pb-20 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-end">
             {/* Left column — main text */}
-            <div className="space-y-8">
+            <div className="space-y-6 sm:space-y-8">
               {/* Chapter tag */}
               <div
                 className="opacity-0 animate-hero-slide-right"
                 style={{ animationDelay: "0.2s" }}
               >
-                <span className="inline-block font-montserrat text-xs font-bold tracking-[0.3em] uppercase text-primary px-0 py-1 border-l-2 border-primary pl-3">
+                <span className="inline-block font-montserrat text-[10px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] uppercase text-primary px-0 py-1 border-l-2 border-primary pl-3 whitespace-normal">
                   {heroTag}
                 </span>
               </div>
@@ -111,7 +111,7 @@ const Home = () => {
               <div className="space-y-1">
                 <div className="overflow-hidden">
                   <h1
-                    className="font-oswald text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
+                    className="font-oswald text-5xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
                     style={{ animationDelay: "0.4s" }}
                   >
                     {heroTitle1}
@@ -119,7 +119,7 @@ const Home = () => {
                 </div>
                 <div className="overflow-hidden">
                   <h1
-                    className="font-oswald text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
+                    className="font-oswald text-5xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black leading-[0.9] tracking-tight text-primary-foreground opacity-0 animate-hero-slide-up"
                     style={{ animationDelay: "0.55s" }}
                   >
                     {heroTitle2}
@@ -127,7 +127,7 @@ const Home = () => {
                 </div>
                 <div className="overflow-hidden">
                   <p
-                    className="font-oswald text-3xl sm:text-4xl md:text-5xl font-light text-primary-foreground/60 mt-4 opacity-0 animate-hero-slide-up"
+                    className="font-oswald text-2xl sm:text-4xl md:text-5xl font-light text-primary-foreground/60 mt-3 sm:mt-4 opacity-0 animate-hero-slide-up"
                     style={{ animationDelay: "0.7s" }}
                   >
                     {heroSubtitle}
@@ -137,7 +137,7 @@ const Home = () => {
 
               {/* Subtext */}
               <p
-                className="font-montserrat text-base md:text-lg text-primary-foreground/50 max-w-md leading-relaxed opacity-0 animate-hero-slide-up"
+                className="font-montserrat text-sm sm:text-base md:text-lg text-primary-foreground/50 max-w-md leading-relaxed opacity-0 animate-hero-slide-up"
                 style={{ animationDelay: "0.85s" }}
               >
                 {heroSubtext}
@@ -145,23 +145,23 @@ const Home = () => {
 
               {/* CTA */}
               <div
-                className="flex flex-wrap gap-4 opacity-0 animate-hero-slide-up"
+                className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 opacity-0 animate-hero-slide-up"
                 style={{ animationDelay: "1s" }}
               >
-                <Link to="/get-involved">
+                <Link to="/get-involved" className="w-full sm:w-auto">
                   <Button
                     size="lg"
-                    className="font-montserrat font-bold text-base px-8 py-7 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 group border-2 border-primary rounded-md"
+                    className="w-full sm:w-auto font-montserrat font-bold text-base px-8 py-6 sm:py-7 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 group border-2 border-primary rounded-md"
                   >
                     {ctaPrimary}
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/events" className="bg-primary-foreground text-secondary-foreground rounded-md">
+                <Link to="/events" className="w-full sm:w-auto bg-primary-foreground text-secondary-foreground rounded-md">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="font-montserrat font-bold text-base px-8 py-7 rounded-md border-2 border-primary-foreground/50 hover:bg-primary-foreground/10 hover:border-primary-foreground transition-all duration-300 text-secondary-foreground"
+                    className="w-full sm:w-auto font-montserrat font-bold text-base px-8 py-6 sm:py-7 rounded-md border-2 border-primary-foreground/50 hover:bg-primary-foreground/10 hover:border-primary-foreground transition-all duration-300 text-secondary-foreground"
                   >
                     <Calendar className="mr-2 h-5 w-5" />
                     {ctaSecondary}
@@ -183,12 +183,12 @@ const Home = () => {
                 ].map((stat, i) => (
                   <div
                     key={stat.label}
-                    className={`p-6 md:p-8 text-center ${
+                    className={`p-4 sm:p-6 md:p-8 text-center ${
                       i < 2 ? "border-r border-primary-foreground/20" : ""
                     }`}
                   >
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                    <div className="font-montserrat text-xs md:text-sm font-semibold text-primary-foreground/70 uppercase tracking-wider mt-2">
+                    <div className="font-montserrat text-[10px] sm:text-xs md:text-sm font-semibold text-primary-foreground/70 uppercase tracking-wider mt-2">
                       {stat.label}
                     </div>
                   </div>
@@ -199,7 +199,7 @@ const Home = () => {
 
           {/* Bottom scroll indicator */}
           <div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-0 animate-hero-slide-up"
+            className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-1 opacity-0 animate-hero-slide-up"
             style={{ animationDelay: "1.4s" }}
           >
             <span className="font-montserrat text-[10px] uppercase tracking-[0.25em] text-primary-foreground/40">
