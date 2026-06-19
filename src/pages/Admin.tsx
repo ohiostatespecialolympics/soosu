@@ -245,17 +245,17 @@ export default function Admin() {
   };
 
   const checkAdminRole = async (userId: string) => {
-    const [{ data: roleRow }, { data: posRows }] = await Promise.all([
+    const [{ data: roleRow }, { data: permRows }] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle(),
-      supabase.from("user_exec_positions").select("position_id, exec_positions(can_manage_finance, can_edit_cms, can_manage_roster, can_manage_tasks)").eq("user_id", userId),
+      supabase.rpc("get_my_exec_permissions"),
     ]);
     const admin = !!roleRow;
-    const rows = (posRows || []) as any[];
-    const finance = rows.some(r => r.exec_positions?.can_manage_finance);
-    const cms = rows.some(r => r.exec_positions?.can_edit_cms);
-    const roster = rows.some(r => r.exec_positions?.can_manage_roster);
-    const tasks = rows.some(r => r.exec_positions?.can_manage_tasks);
-    const anyPos = (posRows || []).length > 0;
+    const perms = (permRows && (permRows as any[])[0]) || {};
+    const finance = !!perms.can_manage_finance;
+    const cms = !!perms.can_edit_cms;
+    const roster = !!perms.can_manage_roster;
+    const tasks = !!perms.can_manage_tasks;
+    const anyPos = !!perms.has_position;
     setIsAdmin(admin);
     setCanManageFinance(admin || finance);
     setCanEditCms(admin || cms);

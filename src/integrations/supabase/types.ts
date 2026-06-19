@@ -435,6 +435,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_exec_permissions: {
+        Args: never
+        Returns: {
+          can_edit_cms: boolean
+          can_manage_finance: boolean
+          can_manage_roster: boolean
+          can_manage_tasks: boolean
+          has_position: boolean
+        }[]
+      }
       has_cms_permission: { Args: { _user_id: string }; Returns: boolean }
       has_finance_permission: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
