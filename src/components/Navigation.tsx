@@ -20,7 +20,6 @@ import logo from "@/assets/logo.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [donateOpen, setDonateOpen] = useState(false);
   const location = useLocation();
 
   const navigationStructure = [
