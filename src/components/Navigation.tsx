@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Heart } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -105,7 +105,6 @@ const Navigation = () => {
               href="https://www.paypal.com/donate/?hosted_button_id=NZFPWWP9MJ3WG"
               className="ml-2 inline-flex items-center justify-center rounded-md text-sm font-montserrat font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 transition-colors"
             >
-              <Heart className="mr-2 h-4 w-4" />
               Donate
             </a>
           </div>
@@ -172,7 +171,6 @@ const Navigation = () => {
               href="https://www.paypal.com/donate/?hosted_button_id=NZFPWWP9MJ3WG"
               className="mt-4 inline-flex items-center justify-center rounded-md text-base font-montserrat font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full transition-colors"
             >
-              <Heart className="mr-2 h-4 w-4" />
               Donate
             </a>
           </div>
