@@ -170,8 +170,6 @@ const Navigation = () => {
             {/* Mobile Donate Button */}
             <a
               href="https://www.paypal.com/donate/?hosted_button_id=NZFPWWP9MJ3WG"
-              target="_blank"
-              rel="noopener noreferrer"
               className="mt-4 inline-flex items-center justify-center rounded-md text-base font-montserrat font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full transition-colors"
             >
               <Heart className="mr-2 h-4 w-4" />
