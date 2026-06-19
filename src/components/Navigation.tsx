@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Heart } from "lucide-react";
+import { Menu, X, ChevronDown, Heart, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
