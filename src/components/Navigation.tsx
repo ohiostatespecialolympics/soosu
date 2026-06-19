@@ -178,22 +178,15 @@ const Navigation = () => {
             })}
             
             {/* Mobile Donate Button */}
-            <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full font-montserrat font-semibold mt-4">
-                  <Heart className="mr-2 h-4 w-4" />
-                  Donate
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="font-oswald text-2xl">Donations Coming Soon!</DialogTitle>
-                  <DialogDescription className="font-montserrat">
-                    We're setting up our online donation system. Check back soon for ways to support Special Olympics at OSU!
-                  </DialogDescription>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
+            <a
+              href="https://www.paypal.com/donate/?hosted_button_id=NZFPWWP9MJ3WG"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center justify-center rounded-md text-base font-montserrat font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full transition-colors"
+            >
+              <Heart className="mr-2 h-4 w-4" />
+              Donate
+            </a>
           </div>
         )}
       </div>
