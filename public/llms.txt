@@ -1,0 +1,24 @@
+# Special Olympics at The Ohio State University
+
+> Student-led chapter of Special Olympics at Ohio State — empowering athletes, building inclusion, and celebrating ability through events, volunteering, and fundraising.
+
+SOOSU is a registered student organization at The Ohio State University that partners with Special Olympics Ohio to host inclusive sporting events, run signature fundraisers like the Polar Plunge, and recruit student volunteers to support athletes year-round.
+
+## Pages
+
+- [Home](/): Mission overview, upcoming highlights, and ways to get involved.
+- [About](/about): Who we are, our mission, and how the chapter operates.
+- [Get Involved](/get-involved): Volunteer opportunities, partner roles, and ways to support.
+- [Join Us](/join): Onboarding funnel and checklist for new student volunteers.
+- [Events Calendar](/events): Full calendar of practices, competitions, and chapter events.
+- [Events List](/events/list): Chronological list view of upcoming events.
+- [Polar Plunge](/polar-plunge): Signature winter fundraiser — info, registration, and team setup.
+- [Current Sponsors](/sponsors): Organizations and businesses currently supporting SOOSU.
+- [Become a Sponsor](/become-a-sponsor): Sponsorship tiers, benefits, and contact for partners.
+- [Leadership](/leadership): Executive board and student leaders.
+- [Contact](/contact): Contact form and ways to reach the chapter.
+
+## Optional
+
+- [Privacy Policy](/privacy): How we handle visitor and member data.
+- [Terms](/terms): Site terms of use.
