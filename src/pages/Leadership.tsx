@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail } from "lucide-react";
@@ -120,13 +121,17 @@ const Leadership = () => {
                 are filled at the end of each academic year through an application and interview process.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button className="font-montserrat font-semibold">
-                  Learn About Positions
-                </Button>
-                <Button variant="outline" className="font-montserrat">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Contact Leadership
-                </Button>
+                <Link to="/get-involved">
+                  <Button className="font-montserrat font-semibold">
+                    Learn About Positions
+                  </Button>
+                </Link>
+                <a href="mailto:contact@soosu.org">
+                  <Button variant="outline" className="font-montserrat">
+                    <Mail className="mr-2 h-4 w-4" />
+                    Contact Leadership
+                  </Button>
+                </a>
               </div>
             </CardContent>
           </Card>

@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
 import { Search, Plus, Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -337,9 +338,11 @@ const EventsCalendar = () => {
                 Join us for this exciting event! More details coming soon.
               </p>
               <div className="flex gap-3">
-                <Button className="font-montserrat font-semibold flex-1">
-                  Sign Up to Volunteer
-                </Button>
+                <Link to="/get-involved" className="flex-1">
+                  <Button className="font-montserrat font-semibold w-full">
+                    Sign Up to Volunteer
+                  </Button>
+                </Link>
                 {selectedEvent && getEventById(selectedEvent.id) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

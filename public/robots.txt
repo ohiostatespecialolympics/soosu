@@ -19,4 +19,4 @@ Allow: /
 Disallow: /admin
 Disallow: /auth
 
-Sitemap: https://buckeye-inclusion-hub.lovable.app/sitemap.xml
+Sitemap: https://soosu.org/sitemap.xml

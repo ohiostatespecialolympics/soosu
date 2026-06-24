@@ -4,6 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 import { MapPin, Clock, Search, Calendar as CalendarIcon, List, Grid3x3, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -546,9 +547,11 @@ const Events = () => {
                     </p>
                   )}
                   <div className="flex gap-3">
-                    <Button className="font-montserrat font-semibold flex-1">
-                      Sign Up to Volunteer
-                    </Button>
+                    <Link to="/get-involved" className="flex-1">
+                      <Button className="font-montserrat font-semibold w-full">
+                        Sign Up to Volunteer
+                      </Button>
+                    </Link>
                     {selectedEvent && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
