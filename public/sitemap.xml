@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/get-involved</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/join</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/events</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/events/list</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/polar-plunge</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/sponsors</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/become-a-sponsor</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/leadership</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/contact</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://buckeye-inclusion-hub.lovable.app/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://soosu.org/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://soosu.org/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://soosu.org/get-involved</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://soosu.org/join</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://soosu.org/events</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://soosu.org/events/list</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://soosu.org/polar-plunge</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://soosu.org/sponsors</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://soosu.org/become-a-sponsor</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://soosu.org/leadership</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://soosu.org/contact</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://soosu.org/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://soosu.org/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
