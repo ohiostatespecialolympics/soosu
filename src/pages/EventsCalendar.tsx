@@ -240,55 +240,46 @@ const EventsCalendar = () => {
         </p>
 
         {/* Search and Filter Controls */}
-        <div className="bg-card border rounded-lg p-4 mb-8 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-            <div className="relative flex-1 md:max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search events..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 font-montserrat"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 font-montserrat shrink-0"
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-8">
+          <div className="relative w-full md:w-96">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 font-montserrat"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2 justify-center items-center">
+            <Button 
+              variant="outline" 
+              className="gap-2 font-montserrat"
               onClick={() => setSubscribeDialogOpen(true)}
             >
               <Plus className="h-4 w-4" />
               Subscribe to Calendar
             </Button>
-          </div>
-
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
-            <button
+            <Button
+              variant={filter === "all" ? "default" : "outline"}
               onClick={() => setFilter("all")}
-              className={`font-montserrat text-sm px-3 py-1.5 rounded-full border transition-colors ${
-                filter === "all"
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background hover:bg-muted border-border"
-              }`}
+              className="font-montserrat"
             >
               All Events
-            </button>
+            </Button>
             {eventStatuses.map((status) => (
-              <button
+              <Button
                 key={status.id}
+                variant={filter === status.id ? "default" : "outline"}
                 onClick={() => setFilter(status.id)}
-                className={`font-montserrat text-sm px-3 py-1.5 rounded-full border transition-colors inline-flex items-center gap-2 ${
-                  filter === status.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background hover:bg-muted border-border"
-                }`}
+                className="font-montserrat"
               >
                 <span
-                  className="w-2 h-2 rounded-full"
+                  className="w-2 h-2 rounded-full mr-2"
                   style={{ backgroundColor: status.color }}
-                />
+                ></span>
                 {status.name}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
