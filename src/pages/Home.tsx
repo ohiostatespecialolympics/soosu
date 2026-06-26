@@ -79,14 +79,18 @@ const Home = () => {
       <section className="relative min-h-[100svh] flex items-end overflow-hidden bg-foreground">
         {/* Large diagonal scarlet block */}
         <div
-          className="absolute top-0 right-0 w-[40%] sm:w-[50%] lg:w-[55%] h-full bg-primary origin-top-right"
-          style={{ clipPath: "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)" }}
+          className="absolute top-0 right-0 w-[42%] sm:w-[50%] lg:w-[55%] h-full bg-primary"
+          style={{ clipPath: "polygon(18% 0, 100% 0, 100% 100%, 0% 100%)" }}
         />
 
-        {/* Texture overlay on scarlet */}
-        <div className="absolute inset-0 opacity-[0.06] mix-blend-overlay" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }} />
+        {/* Soft vignette for depth */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse at 18% 85%, hsl(0 0% 0% / 0.55) 0%, transparent 60%)",
+          }}
+        />
 
         <div className="container mx-auto px-5 sm:px-6 md:px-12 pt-24 sm:pt-32 pb-28 sm:pb-20 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-end">
