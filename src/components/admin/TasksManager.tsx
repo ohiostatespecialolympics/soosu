@@ -24,7 +24,7 @@ interface Task {
   completed_at: string | null;
   created_at: string;
 }
-interface UserOpt { id: string; email: string; }
+interface UserOpt { id: string; email: string; name: string; }
 
 const STATUS_OPTS = ["todo", "in_progress", "done"];
 const PRIORITY_OPTS = ["low", "medium", "high"];
@@ -60,7 +60,11 @@ export default function TasksManager({ userId, canManage }: Props) {
       try {
         const { data: u } = await supabase.functions.invoke("list-users");
         const list = Array.isArray(u) ? u : u?.users;
-        if (Array.isArray(list)) setUsers(list.map((x: any) => ({ id: x.id, email: x.email })));
+        if (Array.isArray(list)) setUsers(list.map((x: any) => ({
+          id: x.id,
+          email: x.email || "",
+          name: x.name || (x.email ? String(x.email).split("@")[0] : x.id.slice(0, 8)),
+        })));
       } catch {}
     }
     setLoading(false);
@@ -68,8 +72,8 @@ export default function TasksManager({ userId, canManage }: Props) {
 
   useEffect(() => { fetchAll(); }, []);
 
-  const emailFor = (id: string | null) =>
-    !id ? "Unassigned" : (users.find(u => u.id === id)?.email || id.slice(0, 8));
+  const nameFor = (id: string | null) =>
+    !id ? "Unassigned" : (users.find(u => u.id === id)?.name || id.slice(0, 8));
 
   const openCreate = () => {
     setEditing(null);
@@ -194,7 +198,7 @@ export default function TasksManager({ userId, canManage }: Props) {
                     </div>
                     {t.description && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{t.description}</p>}
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                      <span>{emailFor(t.assigned_to)}</span>
+                      <span>{nameFor(t.assigned_to)}</span>
                       {t.due_date && (
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
@@ -255,7 +259,7 @@ export default function TasksManager({ userId, canManage }: Props) {
                 onChange={e => setForm({ ...form, assigned_to: e.target.value })}
               >
                 <option value="">Unassigned</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.email}</option>)}
+                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>
           </div>
