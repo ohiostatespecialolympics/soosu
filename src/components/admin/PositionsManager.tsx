@@ -18,7 +18,7 @@ interface Position {
   display_order: number;
 }
 interface Assignment { id: string; user_id: string; position_id: string; }
-interface UserOpt { id: string; email: string; }
+interface UserOpt { id: string; email: string; name: string; }
 
 const PERM_LABELS: Record<string, string> = {
   can_manage_finance: "Finance",
@@ -57,7 +57,11 @@ export default function PositionsManager() {
       const { data } = await supabase.functions.invoke("list-users");
       const list = Array.isArray(data) ? data : data?.users;
       if (Array.isArray(list)) {
-        setUsers(list.map((u: any) => ({ id: u.id, email: u.email })));
+        setUsers(list.map((u: any) => ({
+          id: u.id,
+          email: u.email || "",
+          name: u.name || (u.email ? String(u.email).split("@")[0] : u.id.slice(0, 8)),
+        })));
       }
     } catch {}
     setLoading(false);
@@ -65,7 +69,7 @@ export default function PositionsManager() {
 
   useEffect(() => { fetchAll(); }, []);
 
-  const emailFor = (id: string) => users.find(u => u.id === id)?.email || id.slice(0, 8);
+  const nameFor = (id: string) => users.find(u => u.id === id)?.name || id.slice(0, 8);
 
   const openCreate = () => {
     setEditing(null);
@@ -164,7 +168,7 @@ export default function PositionsManager() {
                 <div className="flex flex-wrap gap-1.5">
                   {holders.map(h => (
                     <Badge key={h.id} variant="outline" className="gap-1 pl-2 pr-1">
-                      {emailFor(h.user_id)}
+                      {nameFor(h.user_id)}
                       <button onClick={() => removeAssignment(h.id)} className="hover:bg-destructive/20 rounded p-0.5">
                         <Trash2 className="h-3 w-3 text-destructive" />
                       </button>
@@ -211,7 +215,7 @@ export default function PositionsManager() {
               onChange={e => setAssignUserId(e.target.value)}
             >
               <option value="">Select…</option>
-              {users.map(u => <option key={u.id} value={u.id}>{u.email}</option>)}
+              {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
           </div>
           <DialogFooter>
