@@ -58,12 +58,24 @@ Deno.serve(async (req) => {
     const roleMap: Record<string, string> = {};
     (roles || []).forEach((r) => { roleMap[r.user_id] = r.role; });
 
-    const result = (users || []).map((u) => ({
-      id: u.id,
-      email: u.email || "",
-      created_at: u.created_at,
-      role: roleMap[u.id] || "user",
-    }));
+    const result = (users || []).map((u) => {
+      const meta = (u.user_metadata || {}) as Record<string, any>;
+      const email = u.email || "";
+      const name =
+        meta.full_name ||
+        meta.name ||
+        meta.display_name ||
+        [meta.first_name, meta.last_name].filter(Boolean).join(" ").trim() ||
+        (email ? email.split("@")[0] : "") ||
+        u.id.slice(0, 8);
+      return {
+        id: u.id,
+        email,
+        name,
+        created_at: u.created_at,
+        role: roleMap[u.id] || "user",
+      };
+    });
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
