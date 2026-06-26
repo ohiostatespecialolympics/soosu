@@ -92,10 +92,10 @@ const Home = () => {
           }}
         />
 
-        <div className="container mx-auto px-5 sm:px-6 md:px-12 pt-24 sm:pt-32 pb-28 sm:pb-20 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-end">
+        <div className="container mx-auto px-5 sm:px-6 md:px-12 pt-24 sm:pt-32 pb-28 sm:pb-24 relative z-10">
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-end">
             {/* Left column — main text */}
-            <div className="space-y-6 sm:space-y-8">
+            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
               {/* Chapter tag */}
               <div
                 className="opacity-0 animate-hero-slide-right"
@@ -171,10 +171,10 @@ const Home = () => {
 
             {/* Right column — stats strip */}
             <div
-              className="opacity-0 animate-hero-scale"
+              className="lg:col-span-5 opacity-0 animate-hero-scale"
               style={{ animationDelay: "1.1s" }}
             >
-              <div className="grid grid-cols-3 gap-0">
+              <div className="grid grid-cols-3 border-y border-primary-foreground/15">
                 {[
                   { value: statVolunteers.target, suffix: statVolunteers.suffix, label: "Volunteers" },
                   { value: statAthletes.target, suffix: statAthletes.suffix, label: "Athletes" },
@@ -182,12 +182,12 @@ const Home = () => {
                 ].map((stat, i) => (
                   <div
                     key={stat.label}
-                    className={`p-4 sm:p-6 md:p-8 text-center ${
-                      i < 2 ? "border-r border-primary-foreground/20" : ""
+                    className={`px-3 sm:px-5 py-5 sm:py-6 text-center ${
+                      i < 2 ? "border-r border-primary-foreground/15" : ""
                     }`}
                   >
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
-                    <div className="font-montserrat text-[10px] sm:text-xs md:text-sm font-semibold text-primary-foreground/70 uppercase tracking-wider mt-2">
+                    <div className="font-montserrat text-[10px] sm:text-xs font-semibold text-primary-foreground/70 uppercase tracking-[0.18em] mt-2">
                       {stat.label}
                     </div>
                   </div>
