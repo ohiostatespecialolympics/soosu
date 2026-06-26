@@ -39,10 +39,10 @@ const PolarPlunge = () => {
       <section className="bg-primary text-primary-foreground py-20 px-4">
   <div className="container mx-auto text-center">
     <h1 className="font-oswald text-5xl md:text-7xl font-bold mb-6">
-      Polar Plunge 2025
+      Polar Plunge 2026
     </h1>
     <p className="font-montserrat text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-      Take the plunge for a great cause! Join us at Mirror Lake for our biggest fundraising event of the year.
+      Take the plunge for a great cause! Join us at the RPAC for our biggest fundraising event of the year.
     </p>
 
     <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -165,7 +165,7 @@ const PolarPlunge = () => {
       <section className="py-16 px-4 bg-accent">
         <div className="container mx-auto max-w-4xl">
           <h2 className="font-oswald text-3xl md:text-4xl font-bold text-center mb-8">
-            2024 Polar Plunge Highlights
+            2025 Polar Plunge Highlights
           </h2>
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <Card>
