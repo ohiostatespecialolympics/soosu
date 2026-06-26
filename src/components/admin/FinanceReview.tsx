@@ -18,7 +18,7 @@ interface Reimb {
   review_comment: string | null; reviewed_at: string | null; paid_at: string | null; created_at: string;
 }
 interface Budget { id: string; user_id: string; fiscal_year: string; amount: number; notes: string | null; }
-interface UserOpt { id: string; email: string; }
+interface UserOpt { id: string; email: string; name: string; }
 
 function fiscalYearOf(date = new Date()) {
   const y = date.getFullYear();
@@ -41,7 +41,7 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
   const [reimbs, setReimbs] = useState<Reimb[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [users, setUsers] = useState<UserOpt[]>([]);
-  const [emails, setEmails] = useState<Record<string, string>>({});
+  const [names, setNames] = useState<Record<string, string>>({});
 
   const [reviewing, setReviewing] = useState<Reimb | null>(null);
   const [reviewAction, setReviewAction] = useState<"approved" | "rejected" | "paid">("approved");
@@ -54,20 +54,23 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
   const fy = fiscalYearOf();
 
   const loadUsers = async () => {
-    // Try edge function (admin only). Fall back gracefully.
     try {
       const { data, error } = await supabase.functions.invoke("list-users");
-      if (!error && data?.users) {
-        const list: UserOpt[] = data.users.map((u: any) => ({ id: u.id, email: u.email }));
+      const raw = Array.isArray(data) ? data : data?.users;
+      if (!error && Array.isArray(raw)) {
+        const list: UserOpt[] = raw.map((u: any) => ({
+          id: u.id,
+          email: u.email || "",
+          name: u.name || (u.email ? String(u.email).split("@")[0] : u.id.slice(0, 8)),
+        }));
         setUsers(list);
-        setEmails(Object.fromEntries(list.map(u => [u.id, u.email])));
+        setNames(Object.fromEntries(list.map(u => [u.id, u.name])));
         return;
       }
     } catch {}
-    // Fallback: build emails map from user_exec_positions assignees only.
     const { data: ueps } = await supabase.from("user_exec_positions").select("user_id");
     const ids = Array.from(new Set((ueps || []).map((u: any) => u.user_id)));
-    setUsers(ids.map(id => ({ id, email: id.slice(0, 8) })));
+    setUsers(ids.map(id => ({ id, email: "", name: id.slice(0, 8) })));
   };
 
   const fetchAll = async () => {
@@ -162,7 +165,7 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
             <Badge variant="outline">{r.category}</Badge>
           </div>
           <p className="text-xs text-muted-foreground">
-            {emails[r.user_id] || r.user_id.slice(0, 8)} · Expense {r.expense_date} · Submitted {new Date(r.created_at).toLocaleDateString()}
+            {names[r.user_id] || r.user_id.slice(0, 8)} · Expense {r.expense_date} · Submitted {new Date(r.created_at).toLocaleDateString()}
           </p>
           {r.review_comment && <p className="text-xs italic text-muted-foreground">Note: "{r.review_comment}"</p>}
         </div>
@@ -221,7 +224,7 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
                 return (
                   <Card key={b.id}><CardContent className="p-4 flex justify-between items-center gap-3 flex-wrap">
                     <div>
-                      <p className="font-medium">{emails[b.user_id] || b.user_id.slice(0, 8)}</p>
+                      <p className="font-medium">{names[b.user_id] || b.user_id.slice(0, 8)}</p>
                       {b.notes && <p className="text-xs text-muted-foreground">{b.notes}</p>}
                     </div>
                     <div className="text-right text-sm">
@@ -246,7 +249,7 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
           {reviewing && (
             <div className="space-y-3">
               <div className="text-sm">
-                <p><span className="text-muted-foreground">Submitter:</span> {emails[reviewing.user_id] || reviewing.user_id}</p>
+                <p><span className="text-muted-foreground">Submitter:</span> {names[reviewing.user_id] || reviewing.user_id}</p>
                 <p><span className="text-muted-foreground">Amount:</span> ${Number(reviewing.amount).toFixed(2)}</p>
                 <p><span className="text-muted-foreground">Description:</span> {reviewing.description}</p>
               </div>
@@ -276,7 +279,7 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
                 onChange={e => setBudgetForm({ ...budgetForm, user_id: e.target.value })}
               >
                 <option value="">Select…</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.email}</option>)}
+                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>
             <div>
