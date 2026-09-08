@@ -11,10 +11,10 @@ const JoinUs = () => {
   const s1b = useContent("join.step1.body", "");
   const s2t = useContent("join.step2.title", "Fill Out an Interest Form");
   const s2b = useContent("join.step2.body", "");
-  const s2url = useContent("join.step2.cta_url", "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform");
+  const s2url = useContent("join.step2.cta_url", "https://forms.gle/2YyjdjmrMPQz8UrB8");
   const s3t = useContent("join.step3.title", "Join Our GroupMe");
   const s3b = useContent("join.step3.body", "");
-  const s3url = useContent("join.step3.cta_url", "https://groupme.com/join_group/YOUR_GROUP_ID");
+  const s3url = useContent("join.step3.cta_url", "https://groupme.com/join_group/116786870/3sLL3IHw");
   const s4t = useContent("join.step4.title", "Complete Online Training");
   const s4b = useContent("join.step4.body", "");
   const s5t = useContent("join.step5.title", "Show Up to Practices & Events");
