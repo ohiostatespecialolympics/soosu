@@ -50,7 +50,7 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="Special Olympics at The Ohio State University" className="h-12 w-auto" />
+            <img src={logo} alt="Special Olympics at The Ohio State University" className="h-10 sm:h-12 w-auto max-w-[min(240px,58vw)] object-contain" />
           </Link>
 
           {/* Desktop Navigation */}
