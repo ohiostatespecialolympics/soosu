@@ -7,6 +7,16 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
   },
+  plugins: {
+    SocialLogin: {
+      providers: {
+        google: false,
+        facebook: false,
+        apple: true,
+        twitter: false,
+      },
+    },
+  },
 };
 
 export default config;
