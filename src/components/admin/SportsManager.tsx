@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Plus, Pencil, Trash2, Trophy, Users } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,12 +109,7 @@ export default function SportsManager() {
   return (
     <div className="space-y-4 max-w-4xl">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Trophy className="h-4 w-4" /> Sports
-          </h2>
-          <p className="text-xs text-muted-foreground">Manage sports members can enroll in.</p>
-        </div>
+        <p className="text-sm text-muted-foreground">Sports members can enroll in.</p>
         <Button size="sm" onClick={openAdd}>
           <Plus className="h-3.5 w-3.5 mr-1.5" /> Add sport
         </Button>

@@ -141,9 +141,9 @@ export default function MyReimbursements({ userId }: { userId: string }) {
         ))}
       </div>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">My Reimbursements</h2>
-        <Button onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" /> New Request</Button>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">Submit and track expense reimbursements.</p>
+        <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-3.5 w-3.5 mr-1.5" /> New Request</Button>
       </div>
 
       {reimbs.length === 0 ? (

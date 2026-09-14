@@ -23,7 +23,7 @@ interface UserOpt { id: string; email: string; name: string; }
 const PERM_LABELS: Record<string, string> = {
   can_manage_finance: "Finance",
   can_manage_roster: "Roster",
-  can_edit_cms: "CMS",
+  can_edit_cms: "Website",
   can_manage_tasks: "Tasks",
 };
 
@@ -130,9 +130,9 @@ export default function PositionsManager() {
 
   return (
     <div className="space-y-4 max-w-4xl">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Exec Positions</h2>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> New Position</Button>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">Define officer roles and who holds them.</p>
+        <Button size="sm" onClick={openCreate}><Plus className="h-3.5 w-3.5 mr-1.5" /> New Position</Button>
       </div>
 
       {positions.length === 0 ? (
