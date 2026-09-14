@@ -13,7 +13,7 @@ import {
   Loader2, Plus, Pencil, Trash2, LogOut, Calendar, Clock, MapPin, Upload,
   X, Repeat, CalendarPlus, LayoutDashboard, Users, Trophy, Star, ChevronRight,
   Menu, CheckCircle2, AlertCircle, ExternalLink, Shield, UserCheck, CheckSquare, GripVertical,
-  Receipt, DollarSign, Briefcase, FileText
+  Receipt, DollarSign, Briefcase, FileText, Car, Megaphone
 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,6 +28,10 @@ import NotificationsBell from "@/components/admin/NotificationsBell";
 import TasksManager from "@/components/admin/TasksManager";
 import ContentEditor from "@/components/admin/ContentEditor";
 import MembersManager from "@/components/admin/MembersManager";
+import SportsManager from "@/components/admin/SportsManager";
+import PickupLocationsManager from "@/components/admin/PickupLocationsManager";
+import AnnouncementsManager from "@/components/admin/AnnouncementsManager";
+import EventRsvpPanel from "@/components/admin/EventRsvpPanel";
 
 interface Event {
   id: string;
@@ -38,6 +42,7 @@ interface Event {
   end_time: string | null;
   location: string | null;
   event_type: string | null;
+  sport_id: string | null;
 }
 
 interface LeadershipMember {
@@ -66,7 +71,7 @@ interface UserWithRole {
   role: string | null;
 }
 
-type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users" | "my-reimbursements" | "finance" | "positions" | "tasks" | "content" | "members";
+type Section = "dashboard" | "events" | "leadership" | "sponsors" | "users" | "my-reimbursements" | "finance" | "positions" | "tasks" | "content" | "members" | "sports" | "pickups" | "announcements";
 
 const TIER_COLORS: Record<string, string> = {
   platinum: "bg-slate-200 text-slate-800",
@@ -112,8 +117,10 @@ export default function Admin() {
   // Event form
   const [eventFormData, setEventFormData] = useState({
     title: "", description: "", event_date: "", start_time: "",
-    end_time: "", location: "", event_type: "",
+    end_time: "", location: "", event_type: "", sport_id: "",
   });
+  const [sportsOptions, setSportsOptions] = useState<Array<{ id: string; name: string }>>([]);
+  const [rsvpEvent, setRsvpEvent] = useState<Event | null>(null);
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringFrequency, setRecurringFrequency] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [recurringEndDate, setRecurringEndDate] = useState("");
@@ -270,11 +277,17 @@ export default function Admin() {
     fetchEvents();
     fetchLeadershipMembers();
     fetchSponsors();
+    fetchSportsOptions();
   };
 
   const fetchEvents = async () => {
     const { data } = await supabase.from("events").select("*").order("event_date", { ascending: true });
-    setEvents(data || []);
+    setEvents((data as Event[]) || []);
+  };
+
+  const fetchSportsOptions = async () => {
+    const { data } = await supabase.from("sports").select("id, name").eq("active", true).order("name");
+    setSportsOptions(data || []);
   };
 
   const fetchLeadershipMembers = async () => {
@@ -341,15 +354,19 @@ export default function Admin() {
 
   const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload = {
+      ...eventFormData,
+      sport_id: eventFormData.sport_id || null,
+    };
     if (editingEvent) {
-      const { error } = await supabase.from("events").update(eventFormData).eq("id", editingEvent.id);
+      const { error } = await supabase.from("events").update(payload).eq("id", editingEvent.id);
       if (error) { toast({ title: "Error", description: "Failed to update event.", variant: "destructive" }); return; }
       toast({ title: "Event updated" });
     } else {
       const dates = isBulkMode && bulkDates.length > 0 ? bulkDates
         : isRecurring ? generateRecurringDates(eventFormData.event_date)
         : [eventFormData.event_date];
-      const { error } = await supabase.from("events").insert(dates.map(d => ({ ...eventFormData, event_date: d })));
+      const { error } = await supabase.from("events").insert(dates.map(d => ({ ...payload, event_date: d })));
       if (error) { toast({ title: "Error", description: "Failed to create event(s).", variant: "destructive" }); return; }
       toast({ title: `${dates.length} event${dates.length > 1 ? "s" : ""} created` });
     }
@@ -425,7 +442,7 @@ export default function Admin() {
 
   const resetEventForm = () => {
     setEditingEvent(null);
-    setEventFormData({ title: "", description: "", event_date: "", start_time: "", end_time: "", location: "", event_type: "" });
+    setEventFormData({ title: "", description: "", event_date: "", start_time: "", end_time: "", location: "", event_type: "", sport_id: "" });
     setIsRecurring(false); setIsBulkMode(false); setBulkDates([]); setNewBulkDate("");
     setRecurringFrequency("weekly"); setRecurringOccurrences(5); setRecurringEndType("occurrences"); setRecurringEndDate("");
   };
@@ -465,25 +482,22 @@ export default function Admin() {
           <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
             <Shield className="h-7 w-7 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Admin Access Required</CardTitle>
+          <CardTitle className="text-2xl">Officer Access Required</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              You're signed in{user?.email ? ` as ${user.email}` : ""}, but this page is only available to club administrators.
+              You're signed in{user?.email ? ` as ${user.email}` : ""}. This page is for club officers.
             </p>
             <p className="text-sm text-muted-foreground">
-              If you should have access, please contact the chapter <span className="font-medium text-foreground">President</span> to request admin permissions.
+              Members can use the club portal for schedule, sports, rides, and messages.
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
-            <p className="font-medium text-foreground">Need help?</p>
-            <p>Reach out via the <a href="/contact" className="underline hover:text-primary">Contact page</a> and mention you need CMS admin access.</p>
-          </div>
           <div className="flex flex-col gap-2">
-            <Button onClick={() => navigate("/")} className="w-full">Return to Home</Button>
+            <Button onClick={() => navigate("/app")} className="w-full">Go to member portal</Button>
+            <Button onClick={() => navigate("/")} variant="outline" className="w-full">Return to Home</Button>
             <Button
-              variant="outline"
+              variant="ghost"
               className="w-full"
               onClick={async () => { await supabase.auth.signOut(); navigate("/auth"); }}
             >
@@ -530,6 +544,9 @@ export default function Admin() {
       label: "People",
       items: [
         { id: "members" as Section, label: "Members", icon: UserCheck },
+        { id: "sports" as Section, label: "Sports", icon: Trophy },
+        { id: "pickups" as Section, label: "Pickup spots", icon: Car },
+        { id: "announcements" as Section, label: "Announcements", icon: Megaphone },
         { id: "positions" as Section, label: "Positions", icon: Briefcase },
         ...(isAdmin ? [{ id: "users" as Section, label: "User Access", icon: Shield }] : []),
       ],
@@ -657,6 +674,18 @@ export default function Admin() {
           {/* ── MEMBERS ── */}
           {activeSection === "members" && (isAdmin || canManageRoster) && user && (
             <MembersManager userId={user.id} />
+          )}
+
+          {activeSection === "sports" && (isAdmin || canManageRoster) && (
+            <SportsManager />
+          )}
+
+          {activeSection === "pickups" && (isAdmin || canManageRoster) && (
+            <PickupLocationsManager />
+          )}
+
+          {activeSection === "announcements" && (isAdmin || canManageRoster) && user && (
+            <AnnouncementsManager userId={user.id} />
           )}
 
           {/* ── DASHBOARD ── */}
@@ -865,11 +894,14 @@ export default function Admin() {
                               title: event.title, description: event.description || "",
                               event_date: event.event_date, start_time: event.start_time || "",
                               end_time: event.end_time || "", location: event.location || "",
-                              event_type: event.event_type || "",
+                              event_type: event.event_type || "", sport_id: event.sport_id || "",
                             });
                             setEventDialogOpen(true);
                           }}>
                             <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" title="RSVPs" onClick={() => setRsvpEvent(event)}>
+                            <UserCheck className="h-3.5 w-3.5" />
                           </Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteEvent(event.id)}>
                             <Trash2 className="h-3.5 w-3.5" />
@@ -1176,6 +1208,22 @@ export default function Admin() {
             </div>
 
             <div>
+              <Label className="text-xs text-muted-foreground">Linked sport (optional)</Label>
+              <Select
+                value={eventFormData.sport_id || "none"}
+                onValueChange={(v) => setEventFormData({ ...eventFormData, sport_id: v === "none" ? "" : v })}
+              >
+                <SelectTrigger className="mt-1"><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {sportsOptions.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <Label className="text-xs text-muted-foreground">Description</Label>
               <Textarea value={eventFormData.description}
                 onChange={e => setEventFormData({ ...eventFormData, description: e.target.value })}
@@ -1474,6 +1522,17 @@ export default function Admin() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!rsvpEvent} onOpenChange={(open) => { if (!open) setRsvpEvent(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>RSVPs — {rsvpEvent?.title}</DialogTitle>
+          </DialogHeader>
+          {rsvpEvent && (
+            <EventRsvpPanel eventId={rsvpEvent.id} eventTitle={rsvpEvent.title} />
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -80,6 +80,165 @@ export type Database = {
         }
         Relationships: []
       }
+      announcements: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          sport_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body?: string
+          created_at?: string
+          id?: string
+          sport_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          sport_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_ride_passengers: {
+        Row: {
+          created_at: string
+          id: string
+          ride_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ride_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ride_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ride_passengers_ride_id_fkey"
+            columns: ["ride_id"]
+            isOneToOne: false
+            referencedRelation: "event_rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_rides: {
+        Row: {
+          created_at: string
+          driver_user_id: string
+          event_id: string
+          id: string
+          notes: string | null
+          pickup_location_id: string | null
+          pickup_time: string | null
+          seats_total: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          driver_user_id: string
+          event_id: string
+          id?: string
+          notes?: string | null
+          pickup_location_id?: string | null
+          pickup_time?: string | null
+          seats_total?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          driver_user_id?: string
+          event_id?: string
+          id?: string
+          notes?: string | null
+          pickup_location_id?: string | null
+          pickup_time?: string | null
+          seats_total?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rides_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_rides_pickup_location_id_fkey"
+            columns: ["pickup_location_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string | null
@@ -89,6 +248,7 @@ export type Database = {
           event_type: string | null
           id: string
           location: string | null
+          sport_id: string | null
           start_time: string | null
           title: string
           updated_at: string | null
@@ -101,6 +261,7 @@ export type Database = {
           event_type?: string | null
           id?: string
           location?: string | null
+          sport_id?: string | null
           start_time?: string | null
           title: string
           updated_at?: string | null
@@ -113,11 +274,20 @@ export type Database = {
           event_type?: string | null
           id?: string
           location?: string | null
+          sport_id?: string | null
           start_time?: string | null
           title?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exec_positions: {
         Row: {
@@ -202,6 +372,7 @@ export type Database = {
           id: string
           name: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -210,6 +381,7 @@ export type Database = {
           id?: string
           name: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -217,6 +389,135 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      pickup_locations: {
+        Row: {
+          active: boolean
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          can_drive_seats: number | null
+          created_at: string
+          email: string | null
+          full_name: string
+          is_driver: boolean
+          onboarding_complete: boolean
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_drive_seats?: number | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          is_driver?: boolean
+          onboarding_complete?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_drive_seats?: number | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          is_driver?: boolean
+          onboarding_complete?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sport_enrollments: {
+        Row: {
+          created_at: string
+          id: string
+          sport_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sport_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sport_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_enrollments_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sports: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          season: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          season?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          season?: string | null
           updated_at?: string
         }
         Relationships: []
