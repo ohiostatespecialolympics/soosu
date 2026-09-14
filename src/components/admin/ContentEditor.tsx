@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, RotateCcw, FileText } from "lucide-react";
+import { Loader2, Save, RotateCcw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { CONTENT_DEFS, CONTENT_PAGES, ContentDef } from "@/lib/contentKeys";
 import { refreshContent } from "@/hooks/useContent";
 
@@ -16,6 +18,7 @@ export default function ContentEditor() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState<Record<string, boolean>>({});
   const [activePage, setActivePage] = useState<string>(CONTENT_PAGES[0]);
+  const [showFieldIds, setShowFieldIds] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -66,9 +69,12 @@ export default function ContentEditor() {
 
   return (
     <div className="space-y-4 max-w-4xl">
-      <div>
-        <h2 className="text-lg font-semibold flex items-center gap-2"><FileText className="h-4 w-4" /> Site Content</h2>
-        <p className="text-xs text-muted-foreground">Edit copy that appears on the public website. Changes go live immediately after saving.</p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-sm text-muted-foreground">Public website copy. Changes go live after saving.</p>
+        <div className="flex items-center gap-2">
+          <Switch id="show-field-ids" checked={showFieldIds} onCheckedChange={setShowFieldIds} />
+          <Label htmlFor="show-field-ids" className="text-xs text-muted-foreground">Show field IDs</Label>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-1.5 border-b border-border pb-2">
@@ -94,7 +100,9 @@ export default function ContentEditor() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center justify-between gap-2">
                   <span>{def.label}</span>
-                  <code className="text-[10px] text-muted-foreground font-normal">{def.key}</code>
+                  {showFieldIds && (
+                    <code className="text-[10px] text-muted-foreground font-normal">{def.key}</code>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">

@@ -159,10 +159,7 @@ export default function MembersManager({ userId }: Props) {
   return (
     <div className="space-y-4 max-w-5xl">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2"><Users className="h-4 w-4" /> Members</h2>
-          <p className="text-xs text-muted-foreground">{members.length} total club member{members.length === 1 ? "" : "s"}</p>
-        </div>
+        <p className="text-sm text-muted-foreground">{members.length} total club member{members.length === 1 ? "" : "s"}</p>
         <div className="flex items-center gap-2 flex-wrap">
           <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImport} />
           <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={importing}>

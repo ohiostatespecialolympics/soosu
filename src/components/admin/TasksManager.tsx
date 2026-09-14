@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { Loader2, Plus, Trash2, CheckCircle2, Circle, Clock, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash2, CheckCircle2, Circle, Clock, Pencil } from "lucide-react";
-import { format } from "date-fns";
 
 interface Task {
   id: string;
@@ -26,7 +25,6 @@ interface Task {
 }
 interface UserOpt { id: string; email: string; name: string; }
 
-const STATUS_OPTS = ["todo", "in_progress", "done"];
 const PRIORITY_OPTS = ["low", "medium", "high"];
 const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-muted text-muted-foreground",
@@ -45,7 +43,6 @@ export default function TasksManager({ userId, canManage }: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<UserOpt[]>([]);
   const [filter, setFilter] = useState<"all" | "mine" | "open">("all");
-
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
   const [form, setForm] = useState({
@@ -60,12 +57,12 @@ export default function TasksManager({ userId, canManage }: Props) {
       try {
         const { data: u } = await supabase.functions.invoke("list-users");
         const list = Array.isArray(u) ? u : u?.users;
-        if (Array.isArray(list)) setUsers(list.map((x: any) => ({
+        if (Array.isArray(list)) setUsers(list.map((x: { id: string; email?: string; name?: string }) => ({
           id: x.id,
           email: x.email || "",
           name: x.name || (x.email ? String(x.email).split("@")[0] : x.id.slice(0, 8)),
         })));
-      } catch {}
+      } catch { /* ignore */ }
     }
     setLoading(false);
   };
@@ -80,6 +77,7 @@ export default function TasksManager({ userId, canManage }: Props) {
     setForm({ title: "", description: "", priority: "medium", due_date: "", assigned_to: "" });
     setDialogOpen(true);
   };
+
   const openEdit = (t: Task) => {
     setEditing(t);
     setForm({
@@ -92,7 +90,7 @@ export default function TasksManager({ userId, canManage }: Props) {
 
   const save = async () => {
     if (!form.title.trim()) return toast({ title: "Title required", variant: "destructive" });
-    const payload: any = {
+    const payload = {
       title: form.title.trim(),
       description: form.description.trim() || null,
       priority: form.priority,
@@ -105,7 +103,6 @@ export default function TasksManager({ userId, canManage }: Props) {
     if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
     toast({ title: editing ? "Task updated" : "Task created" });
 
-    // notify assignee
     if (!editing && payload.assigned_to && payload.assigned_to !== userId) {
       supabase.functions.invoke("send-notification", {
         body: {
@@ -117,14 +114,25 @@ export default function TasksManager({ userId, canManage }: Props) {
       }).catch(() => {});
     }
 
-    setDialogOpen(false); fetchAll();
+    setDialogOpen(false);
+    fetchAll();
   };
 
-  const updateStatus = async (t: Task, status: string) => {
-    const patch: any = { status };
-    if (status === "done") patch.completed_at = new Date().toISOString();
-    else patch.completed_at = null;
+  const toggleDone = async (t: Task) => {
+    const next = t.status === "done" ? "todo" : "done";
+    const patch = {
+      status: next,
+      completed_at: next === "done" ? new Date().toISOString() : null,
+    };
     const { error } = await supabase.from("tasks").update(patch).eq("id", t.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    fetchAll();
+  };
+
+  const markInProgress = async (t: Task) => {
+    if (t.status === "done") return;
+    const next = t.status === "in_progress" ? "todo" : "in_progress";
+    const { error } = await supabase.from("tasks").update({ status: next, completed_at: null }).eq("id", t.id);
     if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
     fetchAll();
   };
@@ -148,12 +156,9 @@ export default function TasksManager({ userId, canManage }: Props) {
   return (
     <div className="space-y-4 max-w-4xl">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h2 className="text-lg font-semibold">Tasks</h2>
-          <p className="text-xs text-muted-foreground">{filtered.length} of {tasks.length} shown</p>
-        </div>
+        <p className="text-sm text-muted-foreground">{filtered.length} of {tasks.length} shown</p>
         <div className="flex items-center gap-2">
-          <Select value={filter} onValueChange={(v: any) => setFilter(v)}>
+          <Select value={filter} onValueChange={(v: "all" | "mine" | "open") => setFilter(v)}>
             <SelectTrigger className="w-36 h-9"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All tasks</SelectItem>
@@ -162,69 +167,67 @@ export default function TasksManager({ userId, canManage }: Props) {
             </SelectContent>
           </Select>
           {canManage && (
-            <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" /> New Task</Button>
+            <Button size="sm" onClick={openCreate}><Plus className="h-3.5 w-3.5 mr-1.5" /> New Task</Button>
           )}
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <Card><CardContent className="p-12 text-center text-muted-foreground text-sm">No tasks.</CardContent></Card>
+        <div className="bg-background border border-dashed border-border rounded-lg p-12 text-center text-sm text-muted-foreground">
+          No tasks.
+        </div>
       ) : (
-        <div className="space-y-2">
+        <div className="bg-background border border-border rounded-lg divide-y divide-border overflow-hidden">
           {filtered.map(t => {
             const isMine = t.assigned_to === userId;
             const canEdit = canManage || isMine;
             const overdue = t.due_date && t.status !== "done" && new Date(t.due_date + "T23:59:59") < new Date();
             return (
-              <Card key={t.id}>
-                <CardContent className="p-4 flex items-start gap-3">
-                  <button
-                    disabled={!canEdit}
-                    onClick={() => updateStatus(t, t.status === "done" ? "todo" : "done")}
-                    className="mt-0.5 shrink-0"
-                    aria-label="Toggle done"
-                  >
-                    {t.status === "done"
-                      ? <CheckCircle2 className="h-5 w-5 text-primary" />
-                      : <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`font-medium ${t.status === "done" ? "line-through text-muted-foreground" : ""}`}>
-                        {t.title}
-                      </p>
-                      <Badge className={PRIORITY_COLORS[t.priority]} variant="outline">{t.priority}</Badge>
-                      {overdue && <Badge variant="destructive">overdue</Badge>}
-                    </div>
-                    {t.description && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{t.description}</p>}
-                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                      <span>{nameFor(t.assigned_to)}</span>
-                      {t.due_date && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {format(new Date(t.due_date + "T00:00:00"), "MMM d, yyyy")}
-                        </span>
-                      )}
-                    </div>
+              <div key={t.id} className="px-4 py-3 flex items-start gap-3">
+                <button
+                  disabled={!canEdit}
+                  onClick={() => toggleDone(t)}
+                  className="mt-0.5 shrink-0"
+                  aria-label="Toggle done"
+                >
+                  {t.status === "done"
+                    ? <CheckCircle2 className="h-5 w-5 text-primary" />
+                    : <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className={`text-sm font-medium ${t.status === "done" ? "line-through text-muted-foreground" : ""}`}>
+                      {t.title}
+                    </p>
+                    <Badge className={PRIORITY_COLORS[t.priority]} variant="outline">{t.priority}</Badge>
+                    {t.status === "in_progress" && <Badge variant="secondary">in progress</Badge>}
+                    {overdue && <Badge variant="destructive">overdue</Badge>}
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {canEdit && (
-                      <Select value={t.status} onValueChange={(v) => updateStatus(t, v)}>
-                        <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {STATUS_OPTS.map(s => <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    )}
-                    {canManage && (
-                      <>
-                        <Button size="sm" variant="ghost" onClick={() => openEdit(t)}><Pencil className="h-3 w-3" /></Button>
-                        <Button size="sm" variant="ghost" onClick={() => remove(t.id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
-                      </>
+                  {t.description && <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{t.description}</p>}
+                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                    <span>{nameFor(t.assigned_to)}</span>
+                    {t.due_date && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {format(new Date(t.due_date + "T00:00:00"), "MMM d, yyyy")}
+                      </span>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {canEdit && t.status !== "done" && (
+                    <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => markInProgress(t)}>
+                      {t.status === "in_progress" ? "To do" : "Start"}
+                    </Button>
+                  )}
+                  {canManage && (
+                    <>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(t)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => remove(t.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                    </>
+                  )}
+                </div>
+              </div>
             );
           })}
         </div>
@@ -253,14 +256,13 @@ export default function TasksManager({ userId, canManage }: Props) {
             </div>
             <div>
               <Label>Assign to</Label>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={form.assigned_to}
-                onChange={e => setForm({ ...form, assigned_to: e.target.value })}
-              >
-                <option value="">Unassigned</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-              </select>
+              <Select value={form.assigned_to || "none"} onValueChange={v => setForm({ ...form, assigned_to: v === "none" ? "" : v })}>
+                <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Unassigned</SelectItem>
+                  {users.map(u => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

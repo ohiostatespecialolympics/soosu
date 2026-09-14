@@ -36,7 +36,7 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { pathname } = useLocation();
-  const hideChrome = pathname === "/admin" || pathname.startsWith("/app");
+  const hideChrome = pathname === "/admin" || pathname === "/auth" || pathname.startsWith("/app");
 
   return (
     <div className="flex flex-col min-h-screen">

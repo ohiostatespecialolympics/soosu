@@ -189,25 +189,33 @@ export default function FinanceReview({ reviewerId }: { reviewerId: string }) {
   return (
     <div className="space-y-6 max-w-5xl">
       <Tabs defaultValue="queue">
-        <TabsList>
-          <TabsTrigger value="queue">Pending ({pending.length})</TabsTrigger>
-          <TabsTrigger value="approved">Approved ({approved.length})</TabsTrigger>
-          <TabsTrigger value="paid">Paid ({paid.length})</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected ({rejected.length})</TabsTrigger>
-          <TabsTrigger value="budgets">Budgets</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap h-auto p-1">
+          <TabsTrigger value="queue" className="shrink-0">Pending ({pending.length})</TabsTrigger>
+          <TabsTrigger value="history" className="shrink-0">History</TabsTrigger>
+          <TabsTrigger value="budgets" className="shrink-0">Budgets</TabsTrigger>
         </TabsList>
 
         <TabsContent value="queue" className="space-y-2 mt-4">
           {pending.length === 0 ? <p className="text-sm text-muted-foreground py-6 text-center">Nothing waiting for review.</p> : pending.map(r => <Row key={r.id} r={r} />)}
         </TabsContent>
-        <TabsContent value="approved" className="space-y-2 mt-4">
-          {approved.map(r => <Row key={r.id} r={r} />)}
-        </TabsContent>
-        <TabsContent value="paid" className="space-y-2 mt-4">
-          {paid.map(r => <Row key={r.id} r={r} />)}
-        </TabsContent>
-        <TabsContent value="rejected" className="space-y-2 mt-4">
-          {rejected.map(r => <Row key={r.id} r={r} />)}
+
+        <TabsContent value="history" className="space-y-4 mt-4">
+          <Tabs defaultValue="approved">
+            <TabsList>
+              <TabsTrigger value="approved">Approved ({approved.length})</TabsTrigger>
+              <TabsTrigger value="paid">Paid ({paid.length})</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected ({rejected.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="approved" className="space-y-2 mt-4">
+              {approved.length === 0 ? <p className="text-sm text-muted-foreground py-6 text-center">No approved requests.</p> : approved.map(r => <Row key={r.id} r={r} />)}
+            </TabsContent>
+            <TabsContent value="paid" className="space-y-2 mt-4">
+              {paid.length === 0 ? <p className="text-sm text-muted-foreground py-6 text-center">No paid requests.</p> : paid.map(r => <Row key={r.id} r={r} />)}
+            </TabsContent>
+            <TabsContent value="rejected" className="space-y-2 mt-4">
+              {rejected.length === 0 ? <p className="text-sm text-muted-foreground py-6 text-center">No rejected requests.</p> : rejected.map(r => <Row key={r.id} r={r} />)}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="budgets" className="mt-4 space-y-4">
