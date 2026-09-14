@@ -4,7 +4,8 @@ import { Analytics } from "@vercel/analytics/react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -33,6 +34,7 @@ import MemberMessages from "./pages/app/MemberMessages";
 import MemberProfile from "./pages/app/MemberProfile";
 
 const queryClient = new QueryClient();
+const isNative = Capacitor.isNativePlatform();
 
 const AppContent = () => {
   const { pathname } = useLocation();
@@ -43,7 +45,7 @@ const AppContent = () => {
       {!hideChrome && <Navigation />}
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={isNative ? <Navigate to="/app" replace /> : <Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/get-involved" element={<GetInvolved />} />
           <Route path="/join" element={<JoinUs />} />
