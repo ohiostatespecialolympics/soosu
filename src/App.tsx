@@ -24,16 +24,23 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import MemberLayout from "./pages/app/MemberLayout";
+import MemberHome from "./pages/app/MemberHome";
+import MemberSchedule from "./pages/app/MemberSchedule";
+import MemberSports from "./pages/app/MemberSports";
+import MemberRides from "./pages/app/MemberRides";
+import MemberMessages from "./pages/app/MemberMessages";
+import MemberProfile from "./pages/app/MemberProfile";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { pathname } = useLocation();
-  const isAdmin = pathname === "/admin";
+  const hideChrome = pathname === "/admin" || pathname.startsWith("/app");
 
   return (
     <div className="flex flex-col min-h-screen">
-      {!isAdmin && <Navigation />}
+      {!hideChrome && <Navigation />}
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -52,10 +59,18 @@ const AppContent = () => {
           <Route path="/admin" element={<Admin />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/app" element={<MemberLayout />}>
+            <Route index element={<MemberHome />} />
+            <Route path="schedule" element={<MemberSchedule />} />
+            <Route path="sports" element={<MemberSports />} />
+            <Route path="rides" element={<MemberRides />} />
+            <Route path="messages" element={<MemberMessages />} />
+            <Route path="profile" element={<MemberProfile />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      {!isAdmin && <Footer />}
+      {!hideChrome && <Footer />}
     </div>
   );
 };

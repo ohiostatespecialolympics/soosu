@@ -39,7 +39,12 @@ const Footer = () => {
               </li>
               <li>
                 <a href="/auth" className="hover:text-primary transition-colors">
-                  Admin Login
+                  Member Login
+                </a>
+              </li>
+              <li>
+                <a href="/app" className="hover:text-primary transition-colors">
+                  My Club
                 </a>
               </li>
             </ul>

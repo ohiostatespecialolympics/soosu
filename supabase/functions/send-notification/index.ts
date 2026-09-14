@@ -33,8 +33,12 @@ Deno.serve(async (req) => {
     if (!userData?.user) return json({ error: "Unauthorized" }, 401);
 
     const admin = createClient(url, serviceKey);
-    const { data: canFinance } = await admin.rpc("has_finance_permission", { _user_id: userData.user.id });
-    if (!canFinance) return json({ error: "Forbidden" }, 403);
+    const [{ data: canFinance }, { data: canRoster }, { data: isAdmin }] = await Promise.all([
+      admin.rpc("has_finance_permission", { _user_id: userData.user.id }),
+      admin.rpc("has_roster_permission", { _user_id: userData.user.id }),
+      admin.rpc("has_role", { _user_id: userData.user.id, _role: "admin" }),
+    ]);
+    if (!canFinance && !canRoster && !isAdmin) return json({ error: "Forbidden" }, 403);
 
     const p = (await req.json()) as Payload;
     if (!p.user_id || !p.title) return json({ error: "user_id and title required" }, 400);
@@ -66,7 +70,7 @@ Deno.serve(async (req) => {
             ${p.body ? `<p style="color:#333;line-height:1.5;">${escapeHtml(p.body)}</p>` : ""}
             ${p.link ? `<p><a href="${escapeHtml(p.link)}" style="color:#dc2626;font-weight:600;">View details →</a></p>` : ""}
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
-            <p style="font-size:12px;color:#999;">You're receiving this because of activity in the Admin Portal.</p>
+            <p style="font-size:12px;color:#999;">You're receiving this because of activity in the SOOSU club portal.</p>
           </div>`;
         const r = await fetch("https://api.resend.com/emails", {
           method: "POST",

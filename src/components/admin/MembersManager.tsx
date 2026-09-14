@@ -5,13 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil, Trash2, Upload, Download, Users } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Upload, Download, Users, Link2, Link2Off } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface Member {
   id: string;
   name: string;
   email: string | null;
   created_at: string;
+  user_id: string | null;
 }
 
 interface Props { userId: string }
@@ -59,6 +61,7 @@ function toCsv(members: Member[]): string {
 export default function MembersManager({ userId }: Props) {
   const { toast } = useToast();
   const [members, setMembers] = useState<Member[]>([]);
+  const [linkedEmails, setLinkedEmails] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -71,9 +74,19 @@ export default function MembersManager({ userId }: Props) {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from("members").select("*").order("name");
+    const [{ data, error }, { data: profiles }] = await Promise.all([
+      supabase.from("members").select("*").order("name"),
+      supabase.from("profiles").select("email, user_id"),
+    ]);
     if (error) toast({ title: "Failed to load members", description: error.message, variant: "destructive" });
-    setMembers(data || []);
+    setMembers((data as Member[]) || []);
+    setLinkedEmails(
+      new Set(
+        (profiles || [])
+          .map((p) => (p.email || "").toLowerCase())
+          .filter(Boolean)
+      )
+    );
     setLoading(false);
   };
 
@@ -184,10 +197,23 @@ export default function MembersManager({ userId }: Props) {
       ) : (
         <div className="bg-background border border-border rounded-lg overflow-hidden">
           <div className="divide-y divide-border">
-            {filtered.map(m => (
+            {filtered.map(m => {
+              const hasAccount = !!m.user_id || (!!m.email && linkedEmails.has(m.email.toLowerCase()));
+              return (
               <div key={m.id} className="px-4 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{m.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium truncate">{m.name}</p>
+                    {hasAccount ? (
+                      <Badge variant="secondary" className="shrink-0 text-[10px]">
+                        <Link2 className="h-3 w-3 mr-1" /> Account linked
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="shrink-0 text-[10px] text-muted-foreground">
+                        <Link2Off className="h-3 w-3 mr-1" /> No account
+                      </Badge>
+                    )}
+                  </div>
                   {m.email && <p className="text-xs text-muted-foreground truncate">{m.email}</p>}
                 </div>
                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
@@ -197,7 +223,8 @@ export default function MembersManager({ userId }: Props) {
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

@@ -101,6 +101,12 @@ const Navigation = () => {
             })}
             
             {/* Donate Button */}
+            <Link
+              to="/auth"
+              className="ml-2 inline-flex items-center justify-center rounded-md text-sm font-montserrat font-semibold border border-border hover:bg-accent h-10 px-4 py-2 transition-colors"
+            >
+              Member Login
+            </Link>
             <a
               href="https://www.paypal.com/donate/?hosted_button_id=NZFPWWP9MJ3WG"
               className="ml-2 inline-flex items-center justify-center rounded-md text-sm font-montserrat font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 transition-colors"
@@ -168,9 +174,16 @@ const Navigation = () => {
             })}
             
             {/* Mobile Donate Button */}
+            <Link
+              to="/auth"
+              onClick={() => setIsOpen(false)}
+              className="mt-2 inline-flex items-center justify-center rounded-md text-base font-montserrat font-semibold border border-border hover:bg-accent h-10 px-4 py-2 w-full transition-colors"
+            >
+              Member Login
+            </Link>
             <a
               href="https://www.paypal.com/donate/?hosted_button_id=NZFPWWP9MJ3WG"
-              className="mt-4 inline-flex items-center justify-center rounded-md text-base font-montserrat font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full transition-colors"
+              className="mt-2 inline-flex items-center justify-center rounded-md text-base font-montserrat font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full transition-colors"
             >
               <HandHeart className="mr-2 h-4 w-4" />
               Donate
