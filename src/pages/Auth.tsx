@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,8 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import logo from "@/assets/logo.png";
 import type { Provider } from "@supabase/supabase-js";
+import {
+  attachAuthDeepLinkListener,
+  getAuthRedirectTo,
+  signInWithOAuthProvider,
+} from "@/lib/nativeAuth";
+
+const isNative = Capacitor.isNativePlatform();
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -18,17 +25,16 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check if user is already logged in
+    attachAuthDeepLinkListener();
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/app");
-      }
+      if (session) navigate("/app");
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        navigate("/app");
-      }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) navigate("/app");
     });
 
     return () => subscription.unsubscribe();
@@ -43,7 +49,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/app`,
+          emailRedirectTo: getAuthRedirectTo(),
         },
       });
 
@@ -94,13 +100,7 @@ export default function Auth() {
   const handleOAuthSignIn = async (provider: Provider) => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/app`,
-        },
-      });
-      if (error) throw error;
+      await signInWithOAuthProvider(provider);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -116,7 +116,7 @@ export default function Auth() {
     <>
       <Button
         type="button"
-        className="w-full bg-black text-white hover:bg-black/90"
+        className="w-full h-11 bg-black text-white hover:bg-black/90"
         onClick={() => handleOAuthSignIn("apple")}
         disabled={loading}
       >
@@ -125,7 +125,13 @@ export default function Auth() {
         </svg>
         Continue with Apple
       </Button>
-      <Button type="button" variant="outline" className="w-full" onClick={() => handleOAuthSignIn("google")} disabled={loading}>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full h-11"
+        onClick={() => handleOAuthSignIn("google")}
+        disabled={loading}
+      >
         <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -150,112 +156,134 @@ export default function Auth() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-primary/10 to-background">
-      <header className="p-4 sm:p-6">
-        <Link to="/" className="inline-flex items-center">
-          <img src={logo} alt="Special Olympics at The Ohio State University" className="h-10 sm:h-12 w-auto max-w-[min(240px,58vw)] object-contain" />
-        </Link>
-      </header>
-      <div className="flex-1 flex items-center justify-center p-4 pt-0">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl">SOOSU Member Login</CardTitle>
-          <CardDescription>Sign in for practices, rides, and club updates</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin">
-              <div className="space-y-4">
-                {oauthButtons}
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+    <div
+      className="min-h-screen flex flex-col bg-gradient-to-b from-[#f8ecec] via-background to-background"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
+      }}
+    >
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-8">
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
+          <img
+            src="/auth-mark.png"
+            alt="SOOSU"
+            className="h-16 w-16 rounded-2xl object-cover shadow-sm ring-1 ring-black/5"
+          />
+          <div>
+            <p className="text-sm font-semibold tracking-wide text-primary">SOOSU</p>
+            <p className="text-xs text-muted-foreground">Special Olympics at Ohio State</p>
+          </div>
+        </div>
+
+        <Card className="w-full max-w-md border-border/60 shadow-lg shadow-primary/5">
+          <CardHeader className="space-y-1 text-center pb-4">
+            <CardTitle className="text-2xl sm:text-3xl">Member Login</CardTitle>
+            <CardDescription>Practices, rides, and club updates</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="signin" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="signin">Sign In</TabsTrigger>
+                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              </TabsList>
+              <TabsContent value="signin" className="mt-0">
+                <div className="space-y-3">
+                  {oauthButtons}
+                  <div className="relative py-1">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
-                  </div>
+                  <form onSubmit={handleSignIn} className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <Input
+                        id="signin-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-password">Password</Label>
+                      <Input
+                        id="signin-password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full h-11" disabled={loading}>
+                      {loading ? "Signing in..." : "Sign In"}
+                    </Button>
+                  </form>
                 </div>
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
+              </TabsContent>
+              <TabsContent value="signup" className="mt-0">
+                <div className="space-y-3">
+                  {oauthButtons}
+                  <div className="relative py-1">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs">
+                      <span className="bg-card px-2 text-muted-foreground">Or sign up with email</span>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing in..." : "Sign In"}
-                  </Button>
-                </form>
-              </div>
-            </TabsContent>
-            <TabsContent value="signup">
-              <div className="space-y-4">
-                {oauthButtons}
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="bg-card px-2 text-muted-foreground">Or sign up with email</span>
-                  </div>
+                  <form onSubmit={handleSignUp} className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        className="h-11"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full h-11" disabled={loading}>
+                      {loading ? "Signing up..." : "Sign Up"}
+                    </Button>
+                  </form>
                 </div>
-                <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Signing up..." : "Sign Up"}
-                </Button>
-                </form>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        {!isNative && (
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            <Link to="/" className="hover:text-primary underline-offset-4 hover:underline">
+              Back to website
+            </Link>
+          </p>
+        )}
       </div>
-      <p className="pb-8 text-center text-sm text-muted-foreground">
-        <Link to="/" className="hover:text-primary underline-offset-4 hover:underline">
-          Back to website
-        </Link>
-      </p>
     </div>
   );
 }

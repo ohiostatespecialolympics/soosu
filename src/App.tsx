@@ -32,9 +32,11 @@ import MemberSports from "./pages/app/MemberSports";
 import MemberRides from "./pages/app/MemberRides";
 import MemberMessages from "./pages/app/MemberMessages";
 import MemberProfile from "./pages/app/MemberProfile";
+import { attachAuthDeepLinkListener } from "./lib/nativeAuth";
 
 const queryClient = new QueryClient();
 const isNative = Capacitor.isNativePlatform();
+attachAuthDeepLinkListener();
 
 const AppContent = () => {
   const { pathname } = useLocation();

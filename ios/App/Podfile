@@ -11,7 +11,9 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-
+  pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
+  pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
+  pod 'CapgoCapacitorSocialLogin', :path => '../../node_modules/@capgo/capacitor-social-login'
 end
 
 target 'App' do
@@ -21,4 +23,17 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+
+  # Silence Xcode warning: [CP] Embed Pods Frameworks has no outputs
+  # (Capacitor sets disable_input_output_paths, so mark the phase always out of date)
+  require 'xcodeproj'
+  project_path = File.join(__dir__, 'App.xcodeproj')
+  project = Xcodeproj::Project.open(project_path)
+  project.targets.each do |target|
+    target.shell_script_build_phases.each do |phase|
+      next unless phase.name&.start_with?('[CP]')
+      phase.always_out_of_date = '1'
+    end
+  end
+  project.save
 end
